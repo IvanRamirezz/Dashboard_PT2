@@ -1,0 +1,16 @@
+:root {
+
+  --bg-main: #112031;
+  --bg-card: #152D35;
+
+  --primary: #345B63;
+  --primary-hover: #2b4c53;
+
+  --text-main: #D4ECDD;
+  --text-muted: #8FA3A8;
+
+  --success: #22c55e;
+  --error: #ef4444;
+
+  --radius: 12px;
+}

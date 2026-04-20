@@ -1,0 +1,108 @@
+---
+import InputField from "../ui/InputField.astro";
+
+const { userType = "student" } = Astro.props;
+---
+
+<section class="auth">
+
+  <div class="card">
+
+    <header class="header">
+      <h1>Registro</h1>
+
+      <p>
+        Llena los siguientes campos para darte de alta y comenzar a usar la app de realidad virtual.
+      </p>
+    </header>
+
+    <div class="divider"></div>
+
+    <form action="/api/auth/register" method="post" id="registerForm">
+      
+      <input type="hidden" name="role" value={userType} />
+
+      <div class="grid">
+
+        <InputField
+          label="Nombre(s)"
+          name="nombre"
+          required
+          placeholder="Ingresa tu nombre"
+        />
+
+        <InputField
+          label="Apellido paterno"
+          name="apellidoPaterno"
+          required
+          placeholder="Ingresa tu apellido paterno"
+        />
+
+        <InputField
+        label="Apellido materno"
+        name="apellidoMaterno"
+        required
+        placeholder="Ingresa tu apellido materno"
+        />
+
+        {
+        userType === "student" && (
+            <InputField
+            label="Boleta"
+            name="boleta"
+            required
+            placeholder="Ingresa tu boleta"
+            />
+        )
+        }
+
+        {
+        userType === "teacher" && (
+            <InputField
+            label="Número de profesor"
+            name="matricula"
+            required
+            placeholder="Ingresa tu número de profesor"
+            />
+        )
+        }
+
+        <InputField
+          label="Correo electrónico"
+          name="email"
+          type="email"
+          required
+          span
+          placeholder="Ingresa tu correo"
+        />
+
+        <InputField
+          label="Contraseña"
+          name="password"
+          type="password"
+          minlength="8"
+          required
+          span
+          placeholder="Crea una contraseña"
+        />
+
+        <InputField
+          label="Confirmar contraseña"
+          name="passwordConfirm"
+          type="password"
+          minlength="8"
+          required
+          span
+          placeholder="Confirma tu contraseña"
+        />
+
+      </div>
+
+      <button class="btn">
+        Crear cuenta →
+      </button>
+
+    </form>
+  </div>
+
+</section>

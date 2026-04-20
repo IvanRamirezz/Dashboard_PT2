@@ -1,0 +1,62 @@
+---
+// src/components/ui/modals/RejectTeacherModal.astro
+
+interface Props {
+
+id:string
+action:string
+
+}
+
+const {
+id,
+action
+} = Astro.props;
+---
+
+<div id={id} class="modal-overlay hidden">
+
+<div class="modal">
+
+<h3>
+Confirmar rechazo
+</h3>
+
+<p>
+¿Deseas rechazar este profesor?
+</p>
+
+<form
+method="POST"
+action={action}
+>
+
+<input
+type="hidden"
+name="profesor_id"
+id="reject-profesor-id"
+/>
+
+<input
+type="hidden"
+name="estado"
+value="rechazado"
+/>
+
+<button class="btn danger">
+Sí, rechazar
+</button>
+
+<button
+type="button"
+class="btn"
+onclick={`closeModal('${id}')`}
+>
+Cancelar
+</button>
+
+</form>
+
+</div>
+
+</div>

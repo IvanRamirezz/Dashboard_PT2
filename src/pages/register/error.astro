@@ -1,0 +1,104 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+const url = new URL(Astro.request.url);
+
+const reason = url.searchParams.get("reason");
+const type = url.searchParams.get("type");
+
+let message = "";
+let backUrl = "";
+
+if (reason === "email") {
+
+message =
+"Este correo ya está registrado.";
+
+}
+
+if (reason === "duplicate") {
+
+message =
+type === "teacher"
+?
+"El número de profesor ya está registrado."
+:
+"La boleta ya está registrada.";
+
+}
+
+if (type === "teacher") {
+
+backUrl = "/register-teacher";
+
+}
+else {
+
+backUrl = "/register";
+
+}
+
+---
+
+<Layout title="Error de registro">
+
+<section class="auth-container">
+
+<div class="auth-card">
+
+<h1>
+No se pudo completar el registro
+</h1>
+
+<p>
+{message}
+</p>
+
+<a
+href={backUrl}
+class="secondary-btn"
+>
+
+Volver al registro
+
+</a>
+
+</div>
+
+</section>
+
+<style>
+
+.auth-card {
+
+text-align:center;
+
+gap:18px;
+
+}
+
+.secondary-btn {
+
+border:1px solid #345B63;
+
+padding:12px 18px;
+
+border-radius:8px;
+
+color:#D4ECDD;
+
+text-decoration:none;
+
+}
+
+.secondary-btn:hover {
+
+background:#345B63;
+
+color:white;
+
+}
+
+</style>
+
+</Layout>

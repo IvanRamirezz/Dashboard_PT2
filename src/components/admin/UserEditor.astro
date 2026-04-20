@@ -1,0 +1,118 @@
+---
+import ConfirmDeleteModal from "../ui/modals/ConfirmDeleteModal.astro";
+import SuccessModal from "../ui/modals/SuccessModal.astro";
+
+interface Props {
+  title: string
+  searchName: string
+  searchLabel: string
+  idField: string
+  identifierField: string
+  identifierValue?: string
+  updateAction: string
+  deleteAction: string
+  user?: any
+  updated?: string | null
+}
+
+const {
+  title,
+  searchName,
+  searchLabel,
+  idField,
+  identifierField,
+  identifierValue,
+  updateAction,
+  deleteAction,
+  user,
+  updated
+} = Astro.props;
+
+/*
+normalizar el ID del usuario una sola vez
+evita user?.[idField] ?? user?.usuarios?.[idField] duplicado
+*/
+const userId = user?.[idField] ?? user?.usuarios?.[idField];
+---
+
+<div class="module">
+
+  <h2>{title}</h2>
+
+  <form method="GET" class="search-box">
+    <label>{searchLabel}</label>
+    <input name={searchName} value={identifierValue ?? ""} />
+    <button class="btn primary">Buscar</button>
+  </form>
+
+  {user && (
+    <form method="POST" action={updateAction}>
+
+      <input type="hidden" name={idField} value={userId} />
+
+      <input
+        type="hidden"
+        name="redirect"
+        value={`${Astro.url.pathname}?${searchName}=${user[identifierField]}&updated=1`}
+      />
+
+      <div class="teacher-form">
+
+        <div class="form-group">
+          <label>Nombre</label>
+          <input name="nombre" value={user.usuarios.nombre} />
+        </div>
+
+        <div class="form-group">
+          <label>Apellido paterno</label>
+          <input name="apellido_paterno" value={user.usuarios.apellido_paterno} />
+        </div>
+
+        <div class="form-group">
+          <label>Apellido materno</label>
+          <input name="apellido_materno" value={user.usuarios.apellido_materno} />
+        </div>
+
+        <div class="form-group">
+          <label>{searchLabel}</label>
+          <input name={identifierField} value={user[identifierField]} />
+        </div>
+
+        <div class="form-actions">
+          <button class="btn primary">Guardar cambios</button>
+          <button
+            type="button"
+            class="btn danger"
+            onclick="openModal('deleteModal')"
+          >
+            Dar de baja
+          </button>
+        </div>
+
+      </div>
+
+    </form>
+  )}
+
+</div>
+
+<SuccessModal
+  id="successModal"
+  show={!!updated}
+  title="Cambios guardados"
+  message="La información se actualizó correctamente."
+/>
+
+<ConfirmDeleteModal
+  id="deleteModal"
+  action={deleteAction}
+  idField={idField}
+  value={userId}
+  message="¿Seguro que deseas eliminar este registro?"
+/>
+
+<script type="module">
+  import { openModal, closeModal } from "../../../src/script/modal";
+  window.openModal = openModal;
+  window.closeModal = closeModal;
+</script>

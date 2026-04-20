@@ -1,0 +1,93 @@
+---
+import DashboardLayout from "../../../layouts/DashboardLayout.astro";
+import TeacherSection from "../../../components/profesor/TeacherSection.astro";
+import Toast from "../../../components/ui/Toast.astro";
+
+import { requireProfesor } from "../../../modules/auth/utils/requireProfesor";
+import {
+  getAssignmentFormData,
+  assignPracticeToGroup
+} from "../../../modules/profesor/services/asignacionService";
+
+import "../../../styles/profesor.css";
+
+/* validar sesión + rol */
+const auth = await requireProfesor(Astro.cookies);
+if ("redirect" in auth) return Astro.redirect(auth.redirect);
+const { user, roleData } = auth;
+
+/* POST */
+if (Astro.request.method === "POST") {
+  const data = await Astro.request.formData();
+
+  const practicaId = Number(data.get("practica_id"));
+  const grupoId    = Number(data.get("grupo_id"));
+
+  if (practicaId && grupoId) {
+    await assignPracticeToGroup(practicaId, grupoId);
+    return Astro.redirect("/dashboard/profesor/asignar?success=asignacion");
+  }
+
+  return Astro.redirect("/dashboard/profesor/asignar");
+}
+
+/* cargar datos del formulario */
+const { practicas, grupos } =
+  await getAssignmentFormData(roleData.usuarioId);
+
+/* toast */
+const toastMap: Record<string, { message: string; type: "success" | "error" | "warning" | "info" }> = {
+  asignacion: { message: "Práctica asignada exitosamente", type: "success" },
+};
+
+const successKey = Astro.url.searchParams.get("success") ?? "";
+const toast      = toastMap[successKey];
+---
+
+<DashboardLayout
+  title="Asignar práctica"
+  role="profesor"
+  userEmail={user.email}
+>
+
+  <TeacherSection title="Asignar práctica">
+
+    <form method="POST" class="teacher-form-box">
+
+      <label class="teacher-label">
+        Selecciona la práctica a realizar
+      </label>
+
+      <select name="practica_id" class="teacher-select" required>
+        <option value="">Seleccionar práctica</option>
+        {practicas.map(p => (
+          <option value={p.practica_id}>{p.titulo}</option>
+        ))}
+      </select>
+
+      <label class="teacher-label">
+        Selecciona el grupo a asignar práctica
+      </label>
+
+      <select name="grupo_id" class="teacher-select" required>
+        <option value="">Seleccionar grupo</option>
+        {grupos.map(g => (
+          <option value={g.grupo_id}>{g.nombre}</option>
+        ))}
+      </select>
+
+      <div class="teacher-actions">
+        <button class="teacher-btn" type="submit">
+          Asignar
+        </button>
+      </div>
+
+    </form>
+
+  </TeacherSection>
+
+  {toast && (
+    <Toast message={toast.message} type={toast.type} />
+  )}
+
+</DashboardLayout>

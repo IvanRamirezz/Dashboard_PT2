@@ -1,0 +1,65 @@
+---
+import DashboardLayout from "../../../layouts/DashboardLayout.astro";
+
+import UserEditor from "../../../components/admin/UserEditor.astro";
+
+import { getValidatedSession } from "../../../modules/auth/utils/sessionService";
+import { getUserRole } from "../../../modules/auth/services/userRoleService";
+
+import { getTeacherByMatricula } from "../../../modules/admin/services/teacherService";
+
+
+const user = await getValidatedSession(Astro.cookies);
+
+if (!user) return Astro.redirect("/");
+
+const roleData = await getUserRole(user.id);
+
+if (roleData?.role !== "admin") return Astro.redirect("/");
+
+
+const matricula =
+Astro.url.searchParams.get("matricula");
+
+const updated =
+Astro.url.searchParams.get("updated");
+
+
+let teacher = null;
+
+if (matricula) {
+
+teacher =
+await getTeacherByMatricula(matricula);
+
+}
+---
+
+<DashboardLayout
+title="Gestión de profesor"
+role="admin"
+userEmail={user.email}
+>
+
+<UserEditor
+
+title="Gestión de profesor"
+
+searchName="matricula"
+searchLabel="Matrícula"
+
+idField="profesor_id"
+identifierField="matricula_trabajador"
+
+identifierValue={matricula ?? undefined}
+
+updateAction="/api/admin/update-teacher"
+deleteAction="/api/admin/delete-teacher"
+
+user={teacher}
+
+updated={updated ?? undefined}
+
+/>
+
+</DashboardLayout>

@@ -1,0 +1,14 @@
+---
+interface Props{
+  type:"error"|"success"
+  message:string
+}
+
+const { type, message } = Astro.props;
+---
+
+<div class={`alert alert-${type}`}>
+
+  {message}
+
+</div>

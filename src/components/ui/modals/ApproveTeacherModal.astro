@@ -1,0 +1,62 @@
+---
+// src/components/ui/modals/ApproveTeacherModal.astro
+
+interface Props {
+
+id:string
+action:string
+
+}
+
+const {
+id,
+action
+} = Astro.props;
+---
+
+<div id={id} class="modal-overlay hidden">
+
+<div class="modal">
+
+<h3>
+Confirmar aprobación
+</h3>
+
+<p>
+¿Deseas dar de alta a este profesor?
+</p>
+
+<form
+method="POST"
+action={action}
+>
+
+<input
+type="hidden"
+name="profesor_id"
+id="approve-profesor-id"
+/>
+
+<input
+type="hidden"
+name="estado"
+value="aprobado"
+/>
+
+<button class="btn primary">
+Sí, aprobar
+</button>
+
+<button
+type="button"
+class="btn"
+onclick={`closeModal('${id}')`}
+>
+Cancelar
+</button>
+
+</form>
+
+</div>
+
+</div>

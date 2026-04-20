@@ -1,0 +1,32 @@
+---
+interface Props {
+  grupos: { grupo_id: number; nombre: string }[];
+  grupoId: number;
+  extraParams?: Record<string, string>; // para pasar practica u otros params
+}
+
+const { grupos, grupoId, extraParams = {} } = Astro.props;
+
+const extraParamsJson = JSON.stringify(extraParams);
+---
+
+<label class="teacher-label">Grupo</label>
+
+<select
+  class="teacher-select"
+  onchange={`
+    const params = new URLSearchParams(location.search);
+    params.set('grupo', this.value);
+
+    const extra = ${extraParamsJson};
+    Object.entries(extra).forEach(([k, v]) => params.set(k, v));
+
+    location.search = params.toString();
+  `}
+>
+  {grupos.map(g => (
+    <option value={g.grupo_id} selected={g.grupo_id === grupoId}>
+      {g.nombre}
+    </option>
+  ))}
+</select>

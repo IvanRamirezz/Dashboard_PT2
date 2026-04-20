@@ -1,0 +1,74 @@
+---
+import DashboardLayout from "../../../layouts/DashboardLayout.astro";
+import GrupoSelector from "../../../components/profesor/GrupoSelector.astro";
+import TeacherSection from "../../../components/profesor/TeacherSection.astro";
+
+import { requireProfesor } from "../../../modules/auth/utils/requireProfesor";
+import { getGroupsByTeacher } from "../../../modules/profesor/services/grupoService";
+import { getStudentListByGroup } from "../../../modules/profesor/services/studentListService";
+
+import "../../../styles/profesor.css";
+
+
+/* validar sesión + rol */
+const auth = await requireProfesor(Astro.cookies);
+if ("redirect" in auth) return Astro.redirect(auth.redirect);
+const { user, roleData } = auth;
+
+
+/* grupos del profesor */
+const grupos = await getGroupsByTeacher(roleData.usuarioId);
+
+
+/* grupo seleccionado */
+const grupoId =
+  Number(Astro.url.searchParams.get("grupo"))
+  || grupos?.[0]?.grupo_id;
+
+
+/* alumnos */
+const alumnos = await getStudentListByGroup(roleData.usuarioId, grupoId);
+---
+
+<DashboardLayout
+  title="Alumnos"
+  role="profesor"
+  userEmail={user.email}
+>
+
+<TeacherSection title="Lista de alumnos">
+
+  <GrupoSelector grupos={grupos} grupoId={grupoId} />
+
+  <table class="teacher-table">
+
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Boleta</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {alumnos.length === 0
+
+        ? (
+          <tr>
+            <td colspan="2">No hay alumnos en este grupo</td>
+          </tr>
+        )
+
+        : alumnos.map(a => (
+          <tr>
+            <td>{a.nombre}</td>
+            <td>{a.boleta}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+
+  </table>
+
+</TeacherSection>
+
+</DashboardLayout>

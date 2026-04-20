@@ -1,0 +1,176 @@
+.auth{
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  padding:40px 16px;
+  background:var(--bg-main);
+}
+
+.card{
+  width:100%;
+  max-width:900px;
+  background:var(--bg-card);
+  border-radius:18px;
+  padding:32px;
+  box-shadow:0 15px 40px rgba(0,0,0,0.4);
+  color:var(--text-main);
+}
+
+
+/* HEADER */
+
+.header{
+  text-align:center;
+}
+
+.header h1{
+  font-size:2rem;
+  margin-bottom:6px;
+  color:#D4ECDD;
+}
+
+.header p{
+  color:#cfe7db;
+  font-size:.95rem;
+}
+
+/* divider */
+
+.divider{
+  height:1px;
+  background:var(--primary);
+  margin:20px 0;
+}
+
+/* GRID FORM */
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+
+/* INPUT FULL WIDTH */
+
+.span-2{
+  grid-column:1 / -1;
+}
+
+/* FIELD */
+
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.field label{
+  font-weight:700;
+  font-size:.95rem;
+  color:#D4ECDD;
+}
+
+.req{
+  color:#D4ECDD;
+}
+
+.field input{
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #345B63;
+  font-size:1rem;
+  background:#D4ECDD;
+  color:#112031;
+  transition:.2s;
+}
+
+.field input:focus{
+  outline:none;
+  border-color:#345B63;
+  background:white;
+}
+
+/* BUTTON */
+
+.btn{
+  margin-top:22px;
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:none;
+  background:#D4ECDD; /* color principal */
+  color:#112031; /* texto oscuro para contraste */
+  font-size:1.1rem;
+  font-weight:700;
+  cursor:pointer;
+  transition:.25s ease;
+}
+
+/* hover */
+.btn:hover{
+  background:#345B63; /* cambia al pasar el mouse */
+  color:#D4ECDD;
+  transform:translateY(-1px);
+  box-shadow:0 10px 20px rgba(0,0,0,.25);
+}
+
+/* click */
+.btn:active{
+  background:#152D35;
+  transform:translateY(0);
+}
+
+/* -------------------------- */
+/* TABLET */
+/* -------------------------- */
+
+@media (max-width:900px){
+
+  .card{
+    padding:26px;
+  }
+
+  .grid{
+    gap:14px;
+  }
+
+}
+
+/* -------------------------- */
+/* MOBILE */
+/* -------------------------- */
+
+@media (max-width:640px){
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .span-2{
+    grid-column:auto;
+  }
+
+  .card{
+    padding:22px;
+  }
+
+  .header h1{
+    font-size:1.7rem;
+  }
+
+  .header p{
+    font-size:.9rem;
+  }
+
+}
+
+input.error {
+  border: 2px solid #ef4444;
+  background: rgba(239,68,68,0.08);
+}
+
+input.error:focus {
+  outline: none;
+  border-color: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239,68,68,0.25);
+}

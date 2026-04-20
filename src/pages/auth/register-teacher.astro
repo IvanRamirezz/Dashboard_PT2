@@ -1,0 +1,16 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import RegisterForm from "../../components/auth/RegisterForm.astro";
+import "../../styles/register.css";
+---
+
+<Layout title="Registro profesor">
+
+<RegisterForm userType="teacher" />
+
+<script
+  type="module"
+  src="/src/scripts/register-form.js">
+</script>
+
+</Layout>

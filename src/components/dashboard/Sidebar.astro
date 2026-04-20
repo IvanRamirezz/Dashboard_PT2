@@ -1,0 +1,88 @@
+---
+type Role = "admin" | "profesor";
+
+type MenuItem = {
+  label: string;
+  url: string;
+};
+
+const { role } = Astro.props as { role: Role };
+
+const menuByRole: Record<Role, MenuItem[]> = {
+
+  admin: [
+    { label: "Dashboard", url: "/dashboard/admin" },
+    // { label: "Alta / Baja", url: "/dashboard/admin/altas" },
+    { label: "Profesores", url: "/dashboard/admin/profesores" },
+    { label: "Alumnos", url: "/dashboard/admin/alumnos" }
+  ],
+
+  profesor: [
+    { label: "Inicio", url: "/dashboard/profesor" },
+    { label: "Asignar", url: "/dashboard/profesor/asignar" },
+    { label: "Calificar", url: "/dashboard/profesor/calificar" },
+    { label: "Alumnos", url: "/dashboard/profesor/alumnos" },
+    { label: "Gestión grupos", url: "/dashboard/profesor/gestionar-grupos" }
+  ]
+
+};
+
+const menu = menuByRole[role] ?? [];
+
+/* ruta actual */
+const currentPath = Astro.url.pathname;
+---
+
+<aside class="sidebar">
+
+<div class="sidebar-logo">
+
+<img
+src="/images/LogoFiberLabvr.png"
+alt="FiberLab VR"
+/>
+
+</div>
+
+
+<nav class="sidebar-menu">
+
+{
+menu.map(item => {
+
+const isActive = currentPath === item.url;
+
+return (
+
+<a
+href={item.url}
+class={`menu-item ${isActive ? "active" : ""}`}
+>
+
+{item.label}
+
+</a>
+
+);
+
+})
+}
+
+</nav>
+
+
+<div class="sidebar-footer">
+
+<form action="/api/auth/signout">
+
+<button class="logout-sidebar">
+
+Cerrar sesión
+
+</button>
+
+</form>
+
+</div>
+
+</aside>

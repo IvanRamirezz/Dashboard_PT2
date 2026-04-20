@@ -1,0 +1,88 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+const url = new URL(Astro.request.url);
+const type = url.searchParams.get("type");
+
+const loginUrl = "/";
+---
+
+<Layout title="Registro exitoso">
+
+<section class="auth-container">
+
+  <div class="auth-card">
+
+    <!-- Icono -->
+    <div class="icon">
+      ✓
+    </div>
+
+    <h1>
+      Registro exitoso
+    </h1>
+
+    <p>
+      Tu cuenta fue creada correctamente.
+    </p>
+
+    <p class="secondary">
+      Revisa tu correo electrónico para validar tu cuenta antes de iniciar sesión.
+    </p>
+
+  </div>
+
+</section>
+
+<style>
+
+.auth-container {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.auth-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  padding: 40px 32px;
+  max-width: 520px;
+  border-radius: 14px;
+}
+
+.icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: #22c55e;
+  color: white;
+  font-size: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+h1 {
+  margin: 0;
+  font-size: 40px;
+}
+
+p {
+  margin: 0;
+  line-height: 1.5;
+  font-size: 20px;
+}
+
+.secondary {
+  color: #9a9a9a;
+  font-size: 15px;
+}
+
+</style>
+
+</Layout>

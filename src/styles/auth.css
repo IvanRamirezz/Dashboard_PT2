@@ -1,0 +1,362 @@
+.auth-container{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  padding:20px;
+}
+
+.auth-card{
+  width:100%;
+  max-width:420px;
+
+  background:var(--bg-card);
+  padding:32px;
+  border-radius:16px;
+
+  box-shadow:0 20px 40px rgba(0,0,0,0.35);
+
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+/* textos */
+
+.title{
+  text-align:center;
+  color:var(--text-main);
+}
+
+.subtitle{
+  text-align:center;
+  color:var(--text-main);
+  opacity:.85;
+  font-size:.95rem;
+}
+
+/* field */
+
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.label{
+  font-size:.85rem;
+  font-weight:600;
+  color:var(--text-main);
+}
+
+
+/* button */
+
+.btn{
+  margin-top:10px;
+
+  padding:12px;
+
+  border-radius:8px;
+
+  border:none;
+
+  background:var(--primary);
+
+  color:white;
+
+  font-weight:600;
+
+  cursor:pointer;
+}
+
+.btn:hover{
+  background:var(--primary-hover);
+}
+
+/* alerts */
+
+.alert{
+  padding:10px;
+
+  border-radius:8px;
+
+  font-size:.9rem;
+
+  text-align:center;
+}
+
+.alert-error{
+  border:1px solid var(--error);
+  color:var(--error);
+  background:rgba(239,68,68,0.12);
+}
+
+.alert-success{
+  border:1px solid var(--success);
+  color:var(--success);
+  background:rgba(34,197,94,0.15);
+}
+
+.forgot-link{
+
+  text-align:center;
+
+  margin-top:-6px;
+
+}
+
+.forgot-link a{
+
+  font-size:.85rem;
+
+  color:var(--text-muted);
+
+  text-decoration:none;
+
+}
+
+.forgot-link a:hover{
+
+  color:var(--text-main);
+
+  text-decoration:underline;
+
+}
+
+/* links */
+
+.register-link{
+
+  margin-top:18px;
+
+  text-align:center;
+
+  font-size:.9rem;
+
+  color:var(--text-main);
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:6px;
+
+}
+
+.register-link a{
+
+  color:var(--text-main);
+
+  text-decoration:none;
+
+  border:1px solid var(--primary);
+
+  padding:8px 14px;
+
+  border-radius:8px;
+
+  display:inline-block;
+
+  transition:.2s;
+
+}
+
+.register-link a:hover{
+
+  background:var(--primary);
+
+}
+
+
+/* forgot password link */
+
+.forgot-link{
+
+  text-align:center;
+
+  margin-top:-6px;
+
+}
+
+.forgot-link a{
+
+  font-size:.85rem;
+
+  color:var(--text-muted);
+
+  text-decoration:none;
+
+}
+
+.forgot-link a:hover{
+
+  color:var(--text-main);
+
+  text-decoration:underline;
+
+}
+
+
+/* FIELD */
+
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.field label{
+  font-weight:700;
+  font-size:.95rem;
+  color:#D4ECDD;
+}
+
+.req{
+  color:#D4ECDD;
+}
+
+.field input{
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #345B63;
+  font-size:1rem;
+  background:#D4ECDD;
+  color:#112031;
+  transition:.2s;
+}
+
+.field input:focus{
+  outline:none;
+  border-color:#345B63;
+  background:white;
+}
+
+/* evita fondo blanco en autofill */
+
+input:-webkit-autofill{
+
+  -webkit-box-shadow:0 0 0 1000px var(--bg-main) inset;
+
+  -webkit-text-fill-color:var(--text-main);
+
+  transition: background-color 9999s ease-in-out 0s;
+
+}
+
+
+/* BUTTON */
+
+.btn{
+
+  width:100%;
+
+  margin-top:12px;
+
+  padding:12px;
+
+  border-radius:8px;
+
+  border:none;
+
+  background:var(--primary);
+
+  color:white;
+
+  font-size:1rem;
+
+  font-weight:600;
+
+  cursor:pointer;
+
+  transition:.2s;
+
+}
+
+.btn:hover{
+
+  background:var(--primary-hover);
+
+}
+
+
+/* OUTLINE BUTTON */
+
+.btn-outline{
+
+  width:100%;
+
+  margin-top:8px;
+
+  padding:10px;
+
+  border-radius:8px;
+
+  border:1px solid var(--primary);
+
+  background:transparent;
+
+  color:var(--text-main);
+
+  text-decoration:none;
+
+  display:inline-block;
+
+  text-align:center;
+
+  transition:.2s;
+
+}
+
+.btn-outline:hover{
+
+  background:var(--primary);
+
+}
+
+
+/* spacing fixes */
+
+form{
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:14px;
+
+}
+
+.password-container{
+  position:relative;
+  display:flex;
+  align-items:center;
+}
+
+.password-container input{
+  width:100%;
+  padding-right:42px;
+}
+
+.toggle-password{
+  position:absolute;
+  right:10px;
+  background:none;
+  border:none;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+}
+
+.toggle-password img{
+  width:20px;
+  height:20px;
+  opacity:.7;
+  transition:.2s;
+}
+
+.toggle-password:hover img{
+  opacity:1;
+}

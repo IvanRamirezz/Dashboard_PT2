@@ -1,0 +1,179 @@
+---
+import DashboardLayout from "../../../layouts/DashboardLayout.astro";
+import GrupoSelector from "../../../components/profesor/GrupoSelector.astro";
+import TeacherSection from "../../../components/profesor/TeacherSection.astro";
+
+import { requireProfesor } from "../../../modules/auth/utils/requireProfesor";
+import { getGroupsByTeacher } from "../../../modules/profesor/services/grupoService";
+import { getStudentsByTeacher } from "../../../modules/profesor/services/alumnoService";
+
+import "../../../styles/profesor.css";
+
+
+/* validar sesión + rol */
+const auth = await requireProfesor(Astro.cookies);
+if ("redirect" in auth) return Astro.redirect(auth.redirect);
+const { user, roleData } = auth;
+
+
+/* obtener grupos del profesor */
+const grupos = await getGroupsByTeacher(roleData.usuarioId);
+
+
+/* grupo seleccionado */
+const grupoId =
+  Number(Astro.url.searchParams.get("grupo"))
+  || grupos?.[0]?.grupo_id;
+
+
+/* práctica seleccionada */
+const practicaId = Astro.url.searchParams.get("practica");
+
+
+/* alumnos del grupo */
+let alumnos = await getStudentsByTeacher(roleData.usuarioId, grupoId);
+
+
+/* catálogo de prácticas disponibles */
+const practicas = [
+  ...new Map(
+    alumnos
+      .filter(a => a.practica_id)
+      .map(a => [
+        a.practica_id,
+        { practica_id: a.practica_id, titulo: a.practica }
+      ])
+  ).values()
+];
+
+
+/* aplicar filtro por práctica */
+if (practicaId) {
+  alumnos = alumnos.filter(a => String(a.practica_id) === practicaId);
+}
+---
+
+<DashboardLayout
+  title="Calificaciones de alumnos"
+  role="profesor"
+  userEmail={user.email}
+>
+
+<TeacherSection title="Calificaciones de alumnos">
+
+  <!-- selector de grupo -->
+  <GrupoSelector grupos={grupos} grupoId={grupoId} />
+
+
+  <!-- selector de práctica -->
+  <label class="teacher-label">Práctica</label>
+
+  <select
+    class="teacher-select"
+    onchange="
+      const params = new URLSearchParams(location.search);
+      const grupo = params.get('grupo');
+      if (grupo) params.set('grupo', grupo);
+      params.set('practica', this.value);
+      location.search = params.toString();
+    "
+  >
+
+    <option value="">Todas</option>
+
+    {practicas.map(p => (
+      <option
+        value={p.practica_id}
+        selected={String(p.practica_id) === practicaId}
+      >
+        {p.titulo}
+      </option>
+    ))}
+
+  </select>
+
+
+  <!-- tabla -->
+  <table class="teacher-table">
+
+    <thead>
+      <tr>
+        <th>Alumno</th>
+        <th>Boleta</th>
+        <th>Práctica</th>
+        <th>Calificación</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {alumnos.length === 0
+
+        ? (
+          <tr>
+            <td colspan="4">No hay resultados aún</td>
+          </tr>
+        )
+
+        : alumnos.map(a => (
+          <tr>
+            <td>{a.nombre}</td>
+            <td>{a.boleta}</td>
+            <td>{a.practica}</td>
+            <td>
+              {a.calificacion !== null
+                ? a.calificacion
+                : (
+                  <button
+                    class="teacher-btn-sm"
+                    data-alumno={a.alumno_id}
+                    data-practica={a.practica_id}
+                    data-json={JSON.stringify(a.respuestas_json ?? {})}
+                  >
+                    Calificar
+                  </button>
+                )
+              }
+            </td>
+          </tr>
+        ))
+      }
+    </tbody>
+
+  </table>
+
+
+  <!-- modal -->
+  <div id="modalCalificar" class="modal">
+    <div class="modal-content">
+
+      <h3>Calificar práctica</h3>
+
+      <p class="calificacion-info">
+        Ingresa un valor de <strong>0 a 1</strong> por pregunta.
+      </p>
+
+      <form id="formCalificacion">
+
+        <div id="preguntasContainer"></div>
+
+        <div class="resultado-preview">
+          Calificación final:
+          <strong id="previewCalificacion">0</strong>
+        </div>
+
+        <div class="teacher-actions">
+          <button type="submit" class="teacher-btn">
+            Guardar calificación
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+</TeacherSection>
+
+</DashboardLayout>
+
+<script src="/scripts/calificarModal.js" is:inline></script>

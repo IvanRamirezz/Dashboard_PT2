@@ -1,0 +1,29 @@
+---
+const {
+  label,
+  name,
+  type = "text",
+  required = false,
+  placeholder = "",
+  span = false,
+  minlength
+} = Astro.props;
+---
+
+<div class={`field ${span ? "span-2" : ""}`}>
+
+  <label for={name}>
+    {label}
+    {required && <span class="req">*</span>}
+  </label>
+
+  <input
+    id={name}
+    name={name}
+    type={type}
+    placeholder={placeholder}
+    required={required}
+    minlength={minlength}
+  />
+
+</div>

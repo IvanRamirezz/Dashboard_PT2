@@ -1,0 +1,48 @@
+---
+interface Props {
+
+id:string
+
+title?:string
+message?:string
+
+show:boolean
+
+}
+const {
+
+id,
+
+title,
+message,
+
+show
+
+} = Astro.props;
+---
+
+<div
+id={id}
+class={`modal-overlay ${show ? "" : "hidden"}`}
+>
+
+<div class="modal">
+
+<h3>
+{title ?? "Operación exitosa"}
+</h3>
+
+<p>
+{message ?? "Los cambios se guardaron correctamente."}
+</p>
+
+<button
+class="btn primary"
+onclick={`closeModal('${id}')`}
+>
+Cerrar
+</button>
+
+</div>
+
+</div>

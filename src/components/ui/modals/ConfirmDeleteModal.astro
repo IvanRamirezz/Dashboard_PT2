@@ -1,0 +1,75 @@
+---
+interface Props {
+
+id:string
+action:string
+
+idField:string
+value:number | undefined
+
+message?:string
+
+}
+
+const {
+
+id,
+action,
+
+idField,
+value,
+
+message
+
+} = Astro.props;
+---
+
+<div
+id={id}
+class="modal-overlay hidden"
+>
+
+<div class="modal">
+
+<h3>
+Confirmar eliminación
+</h3>
+
+<p>
+{message ?? "¿Seguro que deseas eliminar este registro?"}
+</p>
+
+<form
+method="POST"
+action={action}
+>
+
+<input
+type="hidden"
+name={idField}
+value={value}
+/>
+
+<input
+type="hidden"
+name="redirect"
+value={Astro.url.pathname}
+/>
+
+<button class="btn danger">
+Sí, eliminar
+</button>
+
+<button
+type="button"
+class="btn"
+onclick={`closeModal('${id}')`}
+>
+Cancelar
+</button>
+
+</form>
+
+</div>
+
+</div>

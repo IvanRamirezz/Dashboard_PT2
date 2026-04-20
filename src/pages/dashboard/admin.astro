@@ -1,0 +1,121 @@
+---
+import DashboardLayout from "../../layouts/DashboardLayout.astro";
+
+import ApproveTeacherModal from "../../components/ui/modals/ApproveTeacherModal.astro";
+import RejectTeacherModal from "../../components/ui/modals/RejectTeacherModal.astro";
+
+import { getValidatedSession } from "../../modules/auth/utils/sessionService";
+import { getUserRole } from "../../modules/auth/services/userRoleService";
+import { getPendingTeachers } from "../../modules/admin/services/adminService";
+
+const user = await getValidatedSession(Astro.cookies);
+
+if (!user) return Astro.redirect("/");
+
+const roleData = await getUserRole(user.id);
+
+if (roleData?.role !== "admin") return Astro.redirect("/");
+
+const pendingTeachers = await getPendingTeachers();
+
+const email = user.email;
+---
+
+<DashboardLayout
+title="Panel administrador"
+role="admin"
+userEmail={email}
+>
+
+<h1>Solicitudes recientes para dar de alta</h1>
+
+<table class="table">
+
+<thead>
+
+<tr>
+
+<th>Nombre completo</th>
+<th>Número de trabajador</th>
+<th>Estado</th>
+<th>Acciones</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{
+pendingTeachers.map(t => (
+
+<tr>
+
+<td>
+{t.usuarios.nombre}
+{t.usuarios.apellido_paterno}
+{t.usuarios.apellido_materno}
+</td>
+
+<td>
+{t.matricula_trabajador}
+</td>
+
+<td>
+
+<span class="badge warning">
+
+Pendiente de Alta
+
+</span>
+
+</td>
+
+<td class="actions">
+
+<button
+class="btn primary open-approve-modal"
+data-id={t.profesor_id}
+>
+
+Dar de Alta
+
+</button>
+
+<button
+class="btn danger open-reject-modal"
+data-id={t.profesor_id}
+>
+
+Rechazar
+
+</button>
+
+</td>
+
+</tr>
+
+))
+}
+
+</tbody>
+
+</table>
+
+</DashboardLayout>
+
+
+<ApproveTeacherModal
+id="approveModal"
+action="/api/admin/update-teacher-status"
+/>
+
+<RejectTeacherModal
+id="rejectModal"
+action="/api/admin/update-teacher-status"
+/>
+
+
+<script>
+import "../../script/adminModals";
+</script>

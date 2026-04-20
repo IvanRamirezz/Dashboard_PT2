@@ -1,0 +1,67 @@
+---
+import DashboardLayout from "../../../layouts/DashboardLayout.astro";
+
+import UserEditor from "../../../components/admin/UserEditor.astro";
+
+import { getValidatedSession } from "../../../modules/auth/utils/sessionService";
+import { getUserRole } from "../../../modules/auth/services/userRoleService";
+
+import { getStudentByBoleta }
+from "../../../modules/admin/services/studentService";
+
+
+const user =
+await getValidatedSession(Astro.cookies);
+
+if (!user) return Astro.redirect("/");
+
+const roleData =
+await getUserRole(user.id);
+
+if (roleData?.role !== "admin")
+return Astro.redirect("/");
+
+
+const boleta =
+Astro.url.searchParams.get("boleta");
+
+const updated =
+Astro.url.searchParams.get("updated");
+
+
+let student = null;
+
+if (boleta) {
+
+student =
+await getStudentByBoleta(boleta);
+
+}
+---
+
+<DashboardLayout
+title="Gestión de alumno"
+role="admin"
+userEmail={user.email}
+>
+
+<UserEditor
+title="Gestión de alumno"
+
+searchName="boleta"
+searchLabel="Número de boleta"
+
+idField="alumno_id"
+identifierField="boleta"
+
+identifierValue={boleta ?? undefined}
+
+updateAction="/api/admin/update-student"
+deleteAction="/api/admin/delete-student"
+
+user={student}
+
+updated={updated}
+/>
+
+</DashboardLayout>

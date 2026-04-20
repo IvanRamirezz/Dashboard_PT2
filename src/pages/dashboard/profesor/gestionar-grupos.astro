@@ -1,0 +1,115 @@
+---
+import DashboardLayout from "../../../layouts/DashboardLayout.astro";
+import TeacherSection  from "../../../components/profesor/TeacherSection.astro";
+import GrupoSelector   from "../../../components/profesor/GrupoSelector.astro";
+import Toast           from "../../../components/ui/Toast.astro";
+
+import { requireProfesor } from "../../../modules/auth/utils/requireProfesor";
+import {
+  getGroupsByTeacher,
+  createGroup,
+  deactivateGroup,
+} from "../../../modules/profesor/services/grupoService";
+
+import "../../../styles/profesor.css";
+
+/* validar sesión */
+const auth = await requireProfesor(Astro.cookies);
+if ("redirect" in auth) return Astro.redirect(auth.redirect);
+const { user, roleData } = auth;
+
+/* grupos */
+const grupos = await getGroupsByTeacher(roleData.usuarioId);
+
+/* grupo seleccionado */
+const grupoId =
+  Number(Astro.url.searchParams.get("grupo"))
+  || grupos?.[0]?.grupo_id;
+
+const grupoActual = grupos.find(g => g.grupo_id == grupoId);
+
+/* notificaciones */
+const toastMap: Record<string, { message: string; type: "success" | "error" | "warning" | "info" }> = {
+  alta: { message: "Grupo dado de alta exitosamente", type: "success" },
+  baja: { message: "Grupo dado de baja exitosamente", type: "warning" },
+};
+
+const successKey = Astro.url.searchParams.get("success") ?? "";
+const toast      = toastMap[successKey];
+
+/* acciones POST */
+if (Astro.request.method === "POST") {
+  const form        = await Astro.request.formData();
+  const action      = form.get("action");
+  const nombreGrupo = form.get("grupo")?.toString();
+
+  if (action === "alta" && nombreGrupo) {
+    await createGroup(roleData.usuarioId, nombreGrupo);
+    return Astro.redirect("/dashboard/profesor/gestionar-grupos?success=alta");
+  }
+
+  if (action === "baja" && grupoId) {
+    await deactivateGroup(roleData.usuarioId, grupoId);
+    return Astro.redirect("/dashboard/profesor/gestionar-grupos?success=baja");
+  }
+
+  return Astro.redirect("/dashboard/profesor/gestionar-grupos");
+}
+---
+
+<DashboardLayout
+  title="Gestión del grupo"
+  role="profesor"
+  userEmail={user.email}
+>
+
+  <TeacherSection title="Gestión del grupo">
+
+    <form method="POST">
+
+      <label class="grupo-label">Grupo</label>
+
+      <div class="grupo-actions">
+
+        <input
+          type="text"
+          name="grupo"
+          placeholder="Ej. 3IM14"
+          required
+        />
+
+        <button name="action" value="alta" class="btn-primary">
+          Dar de alta
+        </button>
+
+        <button name="action" value="baja" class="btn-danger">
+          Dar de baja
+        </button>
+
+      </div>
+
+    </form>
+
+    <div class="grupo-info">
+
+      <div>
+        <label>Selecciona el grupo:</label>
+        <GrupoSelector grupos={grupos} grupoId={grupoId} />
+      </div>
+
+      <div>
+        <label>Codigo del grupo:</label>
+        <div class="codigo-box">
+          {grupoActual?.codigo_acceso || "----"}
+        </div>
+      </div>
+
+    </div>
+
+  </TeacherSection>
+
+  {toast && (
+    <Toast message={toast.message} type={toast.type} />
+  )}
+
+</DashboardLayout>

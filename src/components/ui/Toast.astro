@@ -1,0 +1,67 @@
+---
+interface Props {
+  message: string;
+  type?: "success" | "error" | "info" | "warning";
+  duration?: number; // ms, default 3000
+}
+
+const {
+  message,
+  type = "success",
+  duration = 3000,
+} = Astro.props;
+---
+
+<div
+  id="toast"
+  class={`toast toast--${type}`}
+  data-duration={duration}
+>
+  {type === "success" && "✅"}
+  {type === "error"   && "❌"}
+  {type === "info"    && "ℹ️"}
+  {type === "warning" && "⚠️"}
+  {" "}{message}
+</div>
+
+<style>
+  .toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    padding: 0.85rem 1.4rem;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 500;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+  }
+
+  .toast--success { background-color: #22c55e; }
+  .toast--error   { background-color: #ef4444; }
+  .toast--info    { background-color: #3b82f6; }
+  .toast--warning { background-color: #f59e0b; }
+
+  .toast.hide { opacity: 0; }
+</style>
+
+<script>
+  const toast = document.getElementById("toast");
+
+  if (toast) {
+    const duration = Number(toast.dataset.duration) || 3000;
+
+    setTimeout(() => toast.classList.add("hide"), duration);
+
+    toast.addEventListener("transitionend", () => {
+      toast.remove();
+      const url = new URL(window.location.href);
+      url.searchParams.delete("success");
+      url.searchParams.delete("error");
+      window.history.replaceState({}, "", url);
+    });
+  }
+</script>

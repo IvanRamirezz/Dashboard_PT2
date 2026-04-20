@@ -1,11 +1,168 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import AuthLayout from "../layouts/AuthLayout.astro";
+import InputField from "../components/ui/InputField.astro";
+import PasswordField from "../components/ui/PasswordField.astro";
+import Alert from "../components/ui/Alert.astro";
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import { getValidatedSession } from "../modules/auth/utils/sessionService";
+import { getUserRole } from "../modules/auth/services/userRoleService";
+
+const { url, redirect, cookies } = Astro;
+
+
+/*
+leer error desde query params
+ej:
+?error=credenciales
+*/
+
+const error = url.searchParams.get("error");
+
+
+/*
+si ya tiene sesión activa
+redirigir según rol
+*/
+
+const user = await getValidatedSession(cookies);
+
+
+if (user) {
+
+  const roleData = await getUserRole(user.id);
+
+  if (roleData?.role === "admin") {
+
+    return redirect("/dashboard/admin");
+
+  }
+
+  if (roleData?.role === "profesor") {
+
+    if (roleData.estado === "aprobado") {
+
+      return redirect("/dashboard/profesor");
+
+    }
+
+  }
+
+}
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<AuthLayout title="Sign in">
+
+<h1 class="title">
+Sign in
+</h1>
+
+<p class="subtitle">
+Ingresa con tus credenciales para acceder a la plataforma.
+</p>
+
+
+<form
+action="/api/auth/signin"
+method="post"
+>
+
+{
+  error === "credenciales" && (
+
+    <Alert
+      type="error"
+      message="Credenciales incorrectas"
+    />
+
+  )
+}
+
+{
+  error === "no_access" && (
+
+    <Alert
+      type="error"
+      message="Los alumnos no tienen acceso al dashboard web"
+    />
+
+  )
+}
+
+{
+  error === "pendiente" && (
+
+    <Alert
+      type="error"
+      message="Tu cuenta de profesor aún no ha sido aprobada"
+    />
+
+  )
+}
+
+{
+  error === "rechazado" && (
+
+    <Alert
+      type="error"
+      message="Tu solicitud fue rechazada. Contacta con el administrador."
+    />
+
+  )
+}
+
+
+<InputField
+  label="Email"
+  name="email"
+  type="email"
+  placeholder="correo@ejemplo.com"
+/>
+
+
+<PasswordField
+  label="Password"
+  name="password"
+/>
+
+
+<button
+class="btn"
+type="submit"
+>
+
+Login
+
+</button>
+
+
+<p class="register-link">
+
+¿No tienes credenciales?
+
+</p>
+
+
+<a
+href="/auth/register-teacher"
+class="btn-outline"
+>
+
+Crear cuenta
+
+</a>
+
+
+<p class="forgot-link">
+
+<a href="/auth/forgot-password">
+
+¿Olvidaste tu contraseña?
+
+</a>
+
+</p>
+
+
+</form>
+
+</AuthLayout>
