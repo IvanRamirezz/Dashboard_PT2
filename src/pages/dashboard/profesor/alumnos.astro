@@ -36,7 +36,9 @@ const alumnos = await getStudentListByGroup(roleData.usuarioId, grupoId);
   userEmail={user.email}
 >
 
-<TeacherSection title="Lista de alumnos">
+<TeacherSection title="Lista de alumnos"
+  description="Selecciona un grupo para consultar sus integrantes y su información académica."
+>
 
   <GrupoSelector grupos={grupos} grupoId={grupoId} />
 

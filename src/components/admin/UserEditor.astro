@@ -4,6 +4,7 @@ import SuccessModal from "../ui/modals/SuccessModal.astro";
 
 interface Props {
   title: string
+  description?: string
   searchName: string
   searchLabel: string
   idField: string
@@ -17,6 +18,7 @@ interface Props {
 
 const {
   title,
+  description,
   searchName,
   searchLabel,
   idField,
@@ -38,6 +40,10 @@ const userId = user?.[idField] ?? user?.usuarios?.[idField];
 <div class="module">
 
   <h2>{title}</h2>
+
+  {description && (
+    <p class="module-description">{description}</p>
+  )}
 
   <form method="GET" class="search-box">
     <label>{searchLabel}</label>

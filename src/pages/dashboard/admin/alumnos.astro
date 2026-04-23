@@ -40,28 +40,23 @@ await getStudentByBoleta(boleta);
 ---
 
 <DashboardLayout
-title="Gestión de alumno"
-role="admin"
-userEmail={user.email}
+    title="Gestión de alumno"
+    role="admin"
+    userEmail={user.email}
 >
 
 <UserEditor
-title="Gestión de alumno"
-
-searchName="boleta"
-searchLabel="Número de boleta"
-
-idField="alumno_id"
-identifierField="boleta"
-
-identifierValue={boleta ?? undefined}
-
-updateAction="/api/admin/update-student"
-deleteAction="/api/admin/delete-student"
-
-user={student}
-
-updated={updated}
+    title="Gestión de alumno"
+    description="Gestiona la información de los alumnos registrados. Busca por matrícula, actualiza sus datos o da de baja su registro en el sistema."
+    searchName="boleta"
+    searchLabel="Número de boleta"
+    idField="alumno_id"
+    identifierField="boleta"
+    identifierValue={boleta ?? undefined}
+    updateAction="/api/admin/update-student"
+    deleteAction="/api/admin/delete-student"
+    user={student}
+    updated={updated}
 />
 
 </DashboardLayout>

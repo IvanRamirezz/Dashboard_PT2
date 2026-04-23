@@ -42,24 +42,17 @@ userEmail={user.email}
 >
 
 <UserEditor
-
-title="Gestión de profesor"
-
-searchName="matricula"
-searchLabel="Matrícula"
-
-idField="profesor_id"
-identifierField="matricula_trabajador"
-
-identifierValue={matricula ?? undefined}
-
-updateAction="/api/admin/update-teacher"
-deleteAction="/api/admin/delete-teacher"
-
-user={teacher}
-
-updated={updated ?? undefined}
-
+  title="Gestión de profesor"
+  description="Gestiona la información de los profesores registrados. Busca por matrícula, actualiza sus datos o da de baja su registro en el sistema."
+  searchName="matricula"
+  searchLabel="Matrícula"
+  idField="profesor_id"
+  identifierField="matricula_trabajador"
+  identifierValue={matricula ?? undefined}
+  updateAction="/api/admin/update-teacher"
+  deleteAction="/api/admin/delete-teacher"
+  user={teacher}
+  updated={updated ?? undefined}
 />
 
 </DashboardLayout>

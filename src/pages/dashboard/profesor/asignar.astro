@@ -50,14 +50,17 @@ const toast      = toastMap[successKey];
   userEmail={user.email}
 >
 
-  <TeacherSection title="Asignar práctica">
+  <TeacherSection 
+    title="Asignar práctica"
+    description="Asigna prácticas a tus grupos para que los alumnos puedan realizarlas en el entorno de FiberLab VR. Selecciona una práctica y el grupo correspondiente."
+  >
 
     <form method="POST" class="teacher-form-box">
 
       <label class="teacher-label">
         Selecciona la práctica a realizar
       </label>
-
+      
       <select name="practica_id" class="teacher-select" required>
         <option value="">Seleccionar práctica</option>
         {practicas.map(p => (
@@ -66,7 +69,7 @@ const toast      = toastMap[successKey];
       </select>
 
       <label class="teacher-label">
-        Selecciona el grupo a asignar práctica
+        Selecciona el grupo al que asignar la práctica
       </label>
 
       <select name="grupo_id" class="teacher-select" required>

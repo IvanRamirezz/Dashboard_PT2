@@ -10,31 +10,20 @@ import { getStudentsByTeacher } from "../../../modules/profesor/services/alumnoS
 import "../../../styles/profesor.css";
 
 
-/* validar sesión + rol */
 const auth = await requireProfesor(Astro.cookies);
 if ("redirect" in auth) return Astro.redirect(auth.redirect);
 const { user, roleData } = auth;
 
-
-/* obtener grupos del profesor */
 const grupos = await getGroupsByTeacher(roleData.usuarioId);
 
-
-/* grupo seleccionado */
 const grupoId =
   Number(Astro.url.searchParams.get("grupo"))
   || grupos?.[0]?.grupo_id;
 
-
-/* práctica seleccionada */
 const practicaId = Astro.url.searchParams.get("practica");
 
-
-/* alumnos del grupo */
 let alumnos = await getStudentsByTeacher(roleData.usuarioId, grupoId);
 
-
-/* catálogo de prácticas disponibles */
 const practicas = [
   ...new Map(
     alumnos
@@ -46,8 +35,6 @@ const practicas = [
   ).values()
 ];
 
-
-/* aplicar filtro por práctica */
 if (practicaId) {
   alumnos = alumnos.filter(a => String(a.practica_id) === practicaId);
 }
@@ -61,11 +48,8 @@ if (practicaId) {
 
 <TeacherSection title="Calificaciones de alumnos">
 
-  <!-- selector de grupo -->
   <GrupoSelector grupos={grupos} grupoId={grupoId} />
 
-
-  <!-- selector de práctica -->
   <label class="teacher-label">Práctica</label>
 
   <select
@@ -78,7 +62,6 @@ if (practicaId) {
       location.search = params.toString();
     "
   >
-
     <option value="">Todas</option>
 
     {practicas.map(p => (
@@ -89,11 +72,8 @@ if (practicaId) {
         {p.titulo}
       </option>
     ))}
-
   </select>
 
-
-  <!-- tabla -->
   <table class="teacher-table">
 
     <thead>
@@ -106,50 +86,59 @@ if (practicaId) {
     </thead>
 
     <tbody>
-      {alumnos.length === 0
+      {alumnos.length === 0 ? (
+        <tr>
+          <td colspan="4">No hay resultados aún</td>
+        </tr>
+      ) : alumnos.map(a => (
+        <tr>
+          <td>{a.nombre}</td>
+          <td>{a.boleta}</td>
+          <td>{a.practica}</td>
+          <td>
+            {a.calificacion !== null ? (
+              <div class="calificacion-cell">
 
-        ? (
-          <tr>
-            <td colspan="4">No hay resultados aún</td>
-          </tr>
-        )
+                <span class="calificacion-num">
+                  {a.calificacion.toFixed(2)}
+                </span>
+                <button
+                  class="teacher-btn-sm btn-calificar"
+                  data-mode="edit"
+                  data-alumno={a.alumno_id}
+                  data-practica={a.practica_id}
+                  data-json={JSON.stringify(a.respuestas_json ?? {})}
+                >
+                  Editar
+                </button>
+              </>
+            ) : (
+              <button
+                class="teacher-btn-sm btn-calificar"
+                data-mode="new"
+                data-alumno={a.alumno_id}
+                data-practica={a.practica_id}
+                data-json={JSON.stringify(a.respuestas_json ?? {})}
+              >
+                Calificar
+              </button>
+            )}
 
-        : alumnos.map(a => (
-          <tr>
-            <td>{a.nombre}</td>
-            <td>{a.boleta}</td>
-            <td>{a.practica}</td>
-            <td>
-              {a.calificacion !== null
-                ? a.calificacion
-                : (
-                  <button
-                    class="teacher-btn-sm"
-                    data-alumno={a.alumno_id}
-                    data-practica={a.practica_id}
-                    data-json={JSON.stringify(a.respuestas_json ?? {})}
-                  >
-                    Calificar
-                  </button>
-                )
-              }
-            </td>
-          </tr>
-        ))
-      }
+          </td>
+        </tr>
+      ))}
     </tbody>
 
   </table>
 
-
-  <!-- modal -->
+  <!-- MODAL -->
   <div id="modalCalificar" class="modal">
     <div class="modal-content">
 
-      <h3>Calificar práctica</h3>
+      <h3 id="modalTitulo">Calificar práctica</h3>
 
       <p class="calificacion-info">
-        Ingresa un valor de <strong>0 a 1</strong> por pregunta.
+          Califica cada pregunta de <strong>0 a 1</strong> (se permiten decimales).
       </p>
 
       <form id="formCalificacion">

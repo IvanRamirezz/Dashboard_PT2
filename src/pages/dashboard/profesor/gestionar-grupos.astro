@@ -8,7 +8,7 @@ import { requireProfesor } from "../../../modules/auth/utils/requireProfesor";
 import {
   getGroupsByTeacher,
   createGroup,
-  deactivateGroup,
+  deactivateGroupByName 
 } from "../../../modules/profesor/services/grupoService";
 
 import "../../../styles/profesor.css";
@@ -29,27 +29,64 @@ const grupoId =
 const grupoActual = grupos.find(g => g.grupo_id == grupoId);
 
 /* notificaciones */
-const toastMap: Record<string, { message: string; type: "success" | "error" | "warning" | "info" }> = {
+type ToastType = "success" | "error" | "warning" | "info";
+
+type ToastKey =
+  | "alta"
+  | "baja"
+  | "alta_existe"
+  | "baja_error"
+  | "reactivado";
+
+const toastMap: Record<
+  ToastKey,
+  { message: string; type: ToastType }
+> = {
   alta: { message: "Grupo dado de alta exitosamente", type: "success" },
   baja: { message: "Grupo dado de baja exitosamente", type: "warning" },
+  alta_existe: { message: "Este grupo ya existe", type: "error" },
+  baja_error: { message: "El grupo no existe o ya está dado de baja", type: "error" },
+  reactivado: { message: "Grupo reactivado correctamente", type: "info" },
 };
 
-const successKey = Astro.url.searchParams.get("success") ?? "";
-const toast      = toastMap[successKey];
+//Tipado de las keys para el toast
+const successKey = Astro.url.searchParams.get("success") as ToastKey | null;
+const toast = successKey ? toastMap[successKey] : undefined;
 
 /* acciones POST */
 if (Astro.request.method === "POST") {
-  const form        = await Astro.request.formData();
-  const action      = form.get("action");
-  const nombreGrupo = form.get("grupo")?.toString();
+  const form   = await Astro.request.formData();
+  const action = form.get("action");
 
-  if (action === "alta" && nombreGrupo) {
-    await createGroup(roleData.usuarioId, nombreGrupo);
+  const grupoNombre = form.get("grupo")
+    ?.toString()
+    .toUpperCase()
+    .trim();
+
+  /* ALTA */
+  if (action === "alta" && grupoNombre) {
+
+    const result = await createGroup(roleData.usuarioId, grupoNombre);
+
+    if (result?.error === "existe") {
+      return Astro.redirect("/dashboard/profesor/gestionar-grupos?success=alta_existe");
+    }
+
+    if (result?.reactivated) {
+      return Astro.redirect("/dashboard/profesor/gestionar-grupos?success=reactivado");
+    }
+
     return Astro.redirect("/dashboard/profesor/gestionar-grupos?success=alta");
-  }
+}
 
-  if (action === "baja" && grupoId) {
-    await deactivateGroup(roleData.usuarioId, grupoId);
+  /* BAJA */
+  if (action === "baja" && grupoNombre) {
+    const result = await deactivateGroupByName(roleData.usuarioId, grupoNombre);
+
+    if (result?.error === "no_existe") {
+      return Astro.redirect("/dashboard/profesor/gestionar-grupos?success=baja_error");
+    }
+
     return Astro.redirect("/dashboard/profesor/gestionar-grupos?success=baja");
   }
 
@@ -63,7 +100,10 @@ if (Astro.request.method === "POST") {
   userEmail={user.email}
 >
 
-  <TeacherSection title="Gestión del grupo">
+  <TeacherSection title="Gestión del grupo"
+    description="
+    Puedes crear nuevos grupos, seleccionar uno existente para consultar su código de acceso o darlo de baja."
+  >
 
     <form method="POST">
 
@@ -76,6 +116,8 @@ if (Astro.request.method === "POST") {
           name="grupo"
           placeholder="Ej. 3IM14"
           required
+          style="text-transform: uppercase;"
+          oninput="this.value = this.value.toUpperCase()"
         />
 
         <button name="action" value="alta" class="btn-primary">
@@ -98,7 +140,7 @@ if (Astro.request.method === "POST") {
       </div>
 
       <div>
-        <label>Codigo del grupo:</label>
+        <label>Código del grupo:</label>
         <div class="codigo-box">
           {grupoActual?.codigo_acceso || "----"}
         </div>

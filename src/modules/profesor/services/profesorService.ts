@@ -6,7 +6,8 @@ export async function getTeacherStats(usuarioId: number) {
   const { count: grupos } = await supabase
     .from("grupos")
     .select("*", { count: "exact", head: true })
-    .eq("profesor_id", usuarioId);
+    .eq("profesor_id", usuarioId)
+    .eq("activo", true); 
 
 
   /* total practicas activas del sistema */
@@ -20,7 +21,8 @@ export async function getTeacherStats(usuarioId: number) {
   const { data: gruposProfesor } = await supabase
     .from("grupos")
     .select("grupo_id")
-    .eq("profesor_id", usuarioId);
+    .eq("profesor_id", usuarioId)
+    .eq("activo", true);;
 
   const gruposIds = gruposProfesor?.map(g => g.grupo_id) ?? [];
 

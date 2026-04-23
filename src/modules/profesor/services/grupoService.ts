@@ -1,110 +1,95 @@
 import { supabase } from "../../../lib/supabase";
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-/* obtener grupos del profesor */
-export async function getGroupsByTeacher(
-  usuarioId: number
-){
+function generarCodigo(longitud = 5): string {
+  const caracteres = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let codigo = "";
+  for (let i = 0; i < longitud; i++) {
+    codigo += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+  }
+  return codigo;
+}
 
+// Extraída del inline de createGroup; función pura y testeable
+function calcularCicloEscolar(): string {
+  const now    = new Date();
+  const year   = now.getFullYear();
+  const periodo = now.getMonth() < 6 ? "2" : "1"; // <6 = semestre par
+  return `${year}-${periodo}`;
+}
+
+// ─── Queries ─────────────────────────────────────────────────────────────────
+
+export async function getGroupsByTeacher(usuarioId: number) {
   const { data, error } = await supabase
     .from("grupos")
-    .select(`
-      grupo_id,
-      nombre,
-      codigo_acceso,
-      ciclo_escolar
-    `)
+    .select("grupo_id, nombre, codigo_acceso, ciclo_escolar")
     .eq("profesor_id", usuarioId)
     .eq("activo", true)
     .order("nombre");
 
-
-  if(error) throw error;
-
+  if (error) throw error;
   return data ?? [];
-
 }
 
+export async function createGroup(usuarioId: number, nombre: string) {
+  const ciclo = calcularCicloEscolar();
 
+  const { data: existente } = await supabase
+    .from("grupos")
+    .select("grupo_id, activo")
+    .eq("profesor_id",   usuarioId)
+    .eq("nombre",        nombre)
+    .eq("ciclo_escolar", ciclo)
+    .maybeSingle();
 
-/* generar codigo acceso */
-function generarCodigo(longitud = 5){
+  if (existente && !existente.activo) {
+    const { error } = await supabase
+      .from("grupos")
+      .update({ activo: true })
+      .eq("grupo_id", existente.grupo_id);
 
-  const caracteres =
-    "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-
-  let codigo = "";
-
-  for(let i=0;i<longitud;i++){
-
-    codigo += caracteres.charAt(
-
-      Math.floor(
-        Math.random()*caracteres.length
-      )
-
-    );
-
+    if (error) throw error;
+    return { reactivated: true };
   }
 
-  return codigo;
-
-}
-
-
-
-/* crear grupo */
-export async function createGroup(
-  usuarioId:number,
-  nombre:string
-){
-
-  const codigo = generarCodigo();
-
-  const ciclo =
-    new Date().getFullYear() + "-2";
-
+  if (existente?.activo) {
+    return { error: "existe" };
+  }
 
   const { data, error } = await supabase
     .from("grupos")
     .insert({
-
       nombre,
-      codigo_acceso: codigo,
+      codigo_acceso: generarCodigo(),
       ciclo_escolar: ciclo,
-      profesor_id: usuarioId,
-      activo: true
-
+      profesor_id:   usuarioId,
+      activo:        true,
     })
     .select()
     .single();
 
-
-  if(error) throw error;
-
-  return data;
-
+  if (error) throw error;
+  return { data };
 }
 
+export async function deactivateGroupByName(usuarioId: number, nombre: string) {
+  const { data: grupo } = await supabase
+    .from("grupos")
+    .select("grupo_id")
+    .eq("profesor_id", usuarioId)
+    .eq("nombre",      nombre)
+    .eq("activo",      true)
+    .maybeSingle();
 
-
-/* dar de baja grupo */
-export async function deactivateGroup(
-  usuarioId:number,
-  grupoId:number
-){
+  if (!grupo) return { error: "no_existe" };
 
   const { error } = await supabase
     .from("grupos")
-    .update({
+    .update({ activo: false })
+    .eq("grupo_id", grupo.grupo_id);
 
-      activo:false
-
-    })
-    .eq("grupo_id", grupoId)
-    .eq("profesor_id", usuarioId);
-
-
-  if(error) throw error;
-
+  if (error) throw error;
+  return { success: true };
 }

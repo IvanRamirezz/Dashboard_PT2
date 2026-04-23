@@ -1,301 +1,139 @@
-let alumnoActual = null;
+// ─── Estado del módulo ───────────────────────────────────────────────────────
+let alumnoActual  = null;
 let practicaActual = null;
 
+// ─── Apertura del modal ──────────────────────────────────────────────────────
+document.addEventListener("click", e => {
+  if (!e.target.classList.contains("btn-calificar")) return;
 
-/*
-abrir modal al hacer clic
-*/
-document.addEventListener(
+  const btn = e.target;
 
-"click",
+  alumnoActual  = btn.dataset.alumno;
+  practicaActual = btn.dataset.practica;
 
-e => {
+  const respuestas = JSON.parse(btn.dataset.json || "{}");
+  const valores    = Object.values(respuestas);
+  const esEdicion  = valores.length > 0 && typeof valores[0] === "object";
 
-if(
+  document.getElementById("modalTitulo").textContent =
+    esEdicion ? "Editar calificación" : "Calificar práctica";
 
-e.target.classList.contains(
-"teacher-btn-sm"
-)
+  crearPreguntas(respuestas, esEdicion);
+  abrirModal();
+});
 
-){
+// ─── Cálculo en tiempo real ──────────────────────────────────────────────────
+document.addEventListener("input", e => {
+  if (e.target.classList.contains("input-calificacion")) {
+    recalcularTotal(); // antes estaba duplicado aquí, ahora reutiliza la función
+  }
+});
 
-const btn = e.target;
+// ─── Guardado ────────────────────────────────────────────────────────────────
+document.addEventListener("submit", async e => {
+  if (e.target.id !== "formCalificacion") return;
+  e.preventDefault();
 
-alumnoActual =
-btn.dataset.alumno;
+  const inputs = document.querySelectorAll(".input-calificacion");
+  const { total, respuestasJson } = construirResultado(inputs);
 
-practicaActual =
-btn.dataset.practica;
+  await fetch("/api/profesor/calificar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      alumno_id:      alumnoActual,
+      practica_id:    practicaActual,
+      calificacion:   total,
+      respuestas_json: respuestasJson,
+    }),
+  });
 
-const respuestas =
-JSON.parse(
-btn.dataset.json
-);
+  cerrarModal();
+  location.reload();
+});
 
-crearPreguntas(respuestas);
+// ─── Cierre con clic en overlay ──────────────────────────────────────────────
+window.addEventListener("click", e => {
+  const modal = document.getElementById("modalCalificar");
+  if (e.target === modal) cerrarModal();
+});
 
-abrirModal();
-
+// ─── Funciones ───────────────────────────────────────────────────────────────
+function abrirModal() {
+  document.getElementById("modalCalificar").style.display = "flex";
 }
 
+function cerrarModal() {
+  document.getElementById("modalCalificar").style.display = "none";
 }
 
-);
-
-
-
-/*
-crear inputs
-*/
-function crearPreguntas(
-respuestas
-){
-
-const container =
-document.getElementById(
-"preguntasContainer"
-);
-
-container.innerHTML = "";
-
-
-Object.entries(respuestas)
-.forEach(
-
-([pregunta,respuesta],
-index)=>{
-
-const div =
-document.createElement("div");
-
-div.className =
-"pregunta-box";
-
-
-div.innerHTML = `
-
-<label>
-
-${index+1}.
-${pregunta}
-
-</label>
-
-
-<p>
-
-Respuesta:
-${respuesta}
-
-</p>
-
-
-<input
-type="number"
-min="0"
-max="1"
-step="0.01"
-placeholder="0 - 1"
-class="input-calificacion"
-required
->
-
-`;
-
-container.appendChild(div);
-
+function recalcularTotal() {
+  const inputs = document.querySelectorAll(".input-calificacion");
+  const total  = calcularPromedio(inputs);
+  document.getElementById("previewCalificacion").textContent = total.toFixed(2);
 }
 
-);
-
+// Separar el cálculo puro de la manipulación del DOM hace la lógica testeable
+function calcularPromedio(inputs) {
+  if (!inputs.length) return 0;
+  let suma = 0;
+  inputs.forEach(i => {
+    const val = Number(i.value);
+    if (!isNaN(val)) suma += val;
+  });
+  return (suma / inputs.length) * 10;
 }
 
+function construirResultado(inputs) {
+  let suma = 0;
+  const respuestasJson = {};
 
+  inputs.forEach(input => {
+    const calificacion   = Number(input.value) || 0;
+    const respuestaTexto = input.parentElement.querySelector(".respuesta-texto").innerText;
 
-/*
-mostrar modal
-*/
-function abrirModal(){
+    respuestasJson[input.dataset.pregunta] = {
+      respuesta:   respuestaTexto,
+      calificacion,
+    };
 
-document
+    suma += calificacion;
+  });
 
-.getElementById(
-"modalCalificar"
-)
-
-.style.display="flex";
-
+  return {
+    total:         (suma / inputs.length) * 10,
+    respuestasJson,
+  };
 }
 
+function crearPreguntas(respuestas, esEdicion) {
+  const container = document.getElementById("preguntasContainer");
+  container.innerHTML = "";
 
+  if (!respuestas || Object.keys(respuestas).length === 0) {
+    container.innerHTML = "<p>No hay respuestas disponibles</p>";
+    return;
+  }
 
-/*
-calcular en tiempo real
-*/
-document.addEventListener(
+  Object.entries(respuestas).forEach(([pregunta, valor], index) => {
+    const respuestaTexto = esEdicion ? valor.respuesta  : valor;
+    const calificacion   = esEdicion ? (valor.calificacion ?? "") : "";
 
-"input",
+    const div = document.createElement("div");
+    div.className = "pregunta-box";
+    div.innerHTML = `
+      <label>${index + 1}. ${pregunta}</label>
+      <p class="respuesta-texto">${respuestaTexto}</p>
+      <input
+        type="number" min="0" max="1" step="0.01"
+        value="${calificacion}"
+        class="input-calificacion"
+        data-pregunta="${pregunta}"
+        required
+      >
+    `;
+    container.appendChild(div);
+  });
 
-e => {
-
-if(
-
-!e.target.classList.contains(
-"input-calificacion"
-)
-
-)return;
-
-
-const inputs =
-document.querySelectorAll(
-".input-calificacion"
-);
-
-
-let suma = 0;
-
-
-inputs.forEach(
-
-i => {
-
-const valor =
-Number(i.value);
-
-
-if(!isNaN(valor))
-
-suma += valor;
-
+  recalcularTotal();
 }
-
-);
-
-
-const total =
-inputs.length
-? (suma / inputs.length) * 10
-: 0;
-
-
-document
-.getElementById(
-"previewCalificacion"
-)
-.textContent =
-total.toFixed(2);
-
-}
-
-);
-
-
-
-/*
-guardar calificación
-*/
-document
-
-.addEventListener(
-
-"submit",
-
-async e=>{
-
-if(
-
-e.target.id !==
-"formCalificacion"
-
-)return;
-
-
-e.preventDefault();
-
-
-const inputs =
-document.querySelectorAll(
-".input-calificacion"
-);
-
-
-let suma = 0;
-
-
-inputs.forEach(
-i => suma += Number(i.value)
-);
-
-
-const total =
-(suma / inputs.length) * 10;
-
-
-/*
-guardar
-*/
-await fetch(
-
-"/api/profesor/calificar",
-
-{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-
-alumno_id:
-alumnoActual,
-
-practica_id:
-practicaActual,
-
-calificacion:
-total
-
-})
-
-}
-
-);
-
-
-/*
-cerrar modal
-*/
-document
-
-.getElementById(
-"modalCalificar"
-)
-
-.style.display="none";
-
-
-location.reload();
-
-}
-
-);
-
-
-
-/*
-cerrar al dar clic fuera
-*/
-window.onclick = e =>{
-
-const modal =
-document.getElementById(
-"modalCalificar"
-);
-
-if(e.target === modal)
-modal.style.display="none";
-
-};

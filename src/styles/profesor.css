@@ -15,6 +15,14 @@
   margin-bottom:45px;
 }
 
+.teacher-section-description {
+  margin-top: 0.4rem;
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+  max-width: 850px;
+  color: #5f6b6d; /* gris suave */
+  line-height: 1.4;
+}
 
 /* contenedor cards adaptable */
 .teacher-stats{
@@ -422,6 +430,16 @@ text-align:center;
   border-radius: 10px;
   background: #fff;
   letter-spacing: 2px;
+}
+
+.calificacion-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* 🔥 separación */
+}
+
+.calificacion-num {
+  font-weight: 600;
 }
 
 

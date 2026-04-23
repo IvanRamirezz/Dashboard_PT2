@@ -1,12 +1,18 @@
 ---
 interface Props {
   title: string;
+  description?: string; // 👈 nuevo
 }
-const { title } = Astro.props;
+const { title, description } = Astro.props;
 ---
 
 <section class="teacher-dashboard">
   <h2 class="teacher-section-title">{title}</h2>
+
+  {description && (
+    <p class="teacher-section-description">{description}</p>
+  )}
+
   <div class="teacher-box">
     <slot />
   </div>
