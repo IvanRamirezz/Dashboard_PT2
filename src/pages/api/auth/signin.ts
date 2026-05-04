@@ -28,18 +28,16 @@ login supabase
     await supabase.auth.signOut();
 
     const { data, error } = await supabase.auth.signInWithPassword({
-
       email,
       password,
-
     });
 
+    console.log(">>> AUTH ERROR:", error);
+    console.log(">>> AUTH DATA:", data?.session?.user?.id);
 
-  if (error) {
-
-    return redirect("/?error=credenciales");
-
-  }
+    if (error) {
+      return redirect("/?error=credenciales");
+    }
 
 
 
@@ -80,13 +78,11 @@ login supabase
   */
 
   const roleData = await getUserRole(authUid);
+console.log(">>> ROLE DATA:", roleData);
 
-
-  if (!roleData) {
-
-    return redirect("/?error=no_access");
-
-  }
+if (!roleData) {
+  return redirect("/?error=no_access");
+}
 
 
 

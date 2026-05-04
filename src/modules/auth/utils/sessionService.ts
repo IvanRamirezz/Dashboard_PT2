@@ -1,34 +1,26 @@
 import { supabase } from "../../../lib/supabase";
+import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 import type { AstroCookies } from "astro";
 
 export async function getValidatedSession(cookies: AstroCookies) {
-
   const accessToken = cookies.get("sb-access-token");
-  const refreshToken = cookies.get("sb-refresh-token");
   const sessionIdCookie = cookies.get("app-session-id");
 
-  if (!accessToken || !refreshToken || !sessionIdCookie) {
+  if (!accessToken || !sessionIdCookie) {
     return null;
   }
 
   try {
+    const { data, error } = await supabase.auth.getUser(accessToken.value);
 
-    const session = await supabase.auth.setSession({
-      refresh_token: refreshToken.value,
-      access_token: accessToken.value,
-    });
-
-    if (session.error) {
+    if (error || !data.user) {
       return null;
     }
 
-    const user = session.data.session?.user;
+    const user = data.user;
 
-    if (!user) {
-      return null;
-    }
-
-    const { data: usuarioDB } = await supabase
+    // 🔥 CAMBIO AQUÍ
+    const { data: usuarioDB } = await supabaseAdmin
       .from("usuarios")
       .select("active_session_uuid")
       .eq("auth_uid", user.id)
@@ -44,9 +36,6 @@ export async function getValidatedSession(cookies: AstroCookies) {
     return user;
 
   } catch {
-
     return null;
-
   }
-
 }

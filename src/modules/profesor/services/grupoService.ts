@@ -1,4 +1,5 @@
 import { supabase } from "../../../lib/supabase";
+import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -85,7 +86,7 @@ export async function deactivateGroupByName(usuarioId: number, nombre: string) {
 
   if (!grupo) return { error: "no_existe" };
 
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from("grupos")
     .update({ activo: false })
     .eq("grupo_id", grupo.grupo_id);

@@ -1,47 +1,88 @@
-# Astro Starter Kit: Basics
+# Dashboard_PT2
 
-```sh
-npm create astro@latest -- --template basics
+Aplicación web desarrollada con Astro para la gestión de usuarios, grupos y autenticación, utilizando Supabase como backend.
+
+---
+
+## 🚀 Instalación
+
+Clonar el repositorio:
+
+```bash
+git clone https://github.com/IvanRamirezz/Dashboard_PT2.git
+cd Dashboard_PT2
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Instalar dependencias:
 
-## 🚀 Project Structure
+```bash
+npm install
+```
 
-Inside of your Astro project, you'll see the following folders and files:
+---
+
+## 🔐 Variables de entorno
+
+Este proyecto utiliza variables de entorno para manejar credenciales de Supabase.
+
+1. Crea un archivo `.env.local` en la raíz del proyecto basado en `.env.example`:
+
+```bash
+cp .env.example .env.local
+```
+
+2. Completa las variables necesarias:
+
+```env
+PUBLIC_SUPABASE_URL=tu_url_de_supabase
+PUBLIC_SUPABASE_ANON_KEY=tu_anon_key
+SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key
+```
+
+⚠️ **Importante:**
+
+* No subas archivos `.env` o `.env.local` al repositorio
+* No compartas tus credenciales
+* Regenera tus keys si crees que fueron expuestas
+
+---
+
+## ▶️ Ejecutar el proyecto
+
+```bash
+npm run dev
+```
+
+El proyecto estará disponible en:
+
+```
+http://localhost:4321
+```
+
+---
+
+## 🧠 Tecnologías utilizadas
+
+* Astro
+* TypeScript
+* Supabase
+
+---
+
+## 📁 Estructura del proyecto
 
 ```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
+src/
+├── components/
+├── modules/
+│   ├── auth/
+│   └── profesor/
+├── pages/
+│   └── api/
 ```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+---
 
-## 🧞 Commands
+## 📌 Notas
 
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
-# Dashboard_PT2
+Este proyecto forma parte del PT2 y tiene fines académicos.
