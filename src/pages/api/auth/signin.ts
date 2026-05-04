@@ -1,12 +1,14 @@
 import type { APIRoute } from "astro";
 
-import { supabase } from "../../../lib/supabase";
+import { createSupabaseServerClient } from "../../../lib/supabase";
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 
 import { getUserRole } from "../../../modules/auth/services/userRoleService";
+import { getSessionCookieOptions } from "../../../modules/auth/utils/sessionCookies";
 
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
+  const supabase = createSupabaseServerClient();
 
   const formData = await request.formData();
 
@@ -31,9 +33,6 @@ login supabase
       email,
       password,
     });
-
-    console.log(">>> AUTH ERROR:", error);
-    console.log(">>> AUTH DATA:", data?.session?.user?.id);
 
     if (error) {
       return redirect("/?error=credenciales");
@@ -151,7 +150,7 @@ function setCookies(
 
     session.access_token,
 
-    { path: "/" }
+    getSessionCookieOptions()
 
   );
 
@@ -163,7 +162,7 @@ function setCookies(
 
     session.refresh_token,
 
-    { path: "/" }
+    getSessionCookieOptions()
 
   );
 
@@ -175,7 +174,7 @@ function setCookies(
 
     sessionId,
 
-    { path: "/" }
+    getSessionCookieOptions()
 
   );
 

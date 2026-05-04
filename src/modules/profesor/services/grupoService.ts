@@ -1,4 +1,3 @@
-import { supabase } from "../../../lib/supabase";
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -23,7 +22,7 @@ function calcularCicloEscolar(): string {
 // ─── Queries ─────────────────────────────────────────────────────────────────
 
 export async function getGroupsByTeacher(usuarioId: number) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("grupos")
     .select("grupo_id, nombre, codigo_acceso, ciclo_escolar")
     .eq("profesor_id", usuarioId)
@@ -37,7 +36,7 @@ export async function getGroupsByTeacher(usuarioId: number) {
 export async function createGroup(usuarioId: number, nombre: string) {
   const ciclo = calcularCicloEscolar();
 
-  const { data: existente } = await supabase
+  const { data: existente } = await supabaseAdmin
     .from("grupos")
     .select("grupo_id, activo")
     .eq("profesor_id",   usuarioId)
@@ -46,7 +45,7 @@ export async function createGroup(usuarioId: number, nombre: string) {
     .maybeSingle();
 
   if (existente && !existente.activo) {
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from("grupos")
       .update({ activo: true })
       .eq("grupo_id", existente.grupo_id);
@@ -59,7 +58,7 @@ export async function createGroup(usuarioId: number, nombre: string) {
     return { error: "existe" };
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("grupos")
     .insert({
       nombre,
@@ -76,7 +75,7 @@ export async function createGroup(usuarioId: number, nombre: string) {
 }
 
 export async function deactivateGroupByName(usuarioId: number, nombre: string) {
-  const { data: grupo } = await supabase
+  const { data: grupo } = await supabaseAdmin
     .from("grupos")
     .select("grupo_id")
     .eq("profesor_id", usuarioId)

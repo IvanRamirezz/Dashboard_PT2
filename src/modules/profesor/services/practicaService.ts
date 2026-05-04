@@ -1,6 +1,7 @@
-import { supabase } from "../../../lib/supabase";
+import { createSupabaseServerClient } from "../../../lib/supabase";
 
 export async function getPractices(){
+  const supabase = createSupabaseServerClient();
 
   const { data, error } = await supabase
     .from("practicas")

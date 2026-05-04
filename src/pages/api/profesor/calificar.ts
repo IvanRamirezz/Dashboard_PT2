@@ -1,5 +1,7 @@
 import type { APIRoute } from "astro";
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
+import { getValidatedSession } from "../../../modules/auth/utils/sessionService";
+import { getUserRole } from "../../../modules/auth/services/userRoleService";
 
 interface CalificacionBody {
   alumno_id:       number;
@@ -17,6 +19,14 @@ function parseBody(body: unknown): CalificacionBody | null {
 
   if (!alumno_id || !practica_id)            return null;
   if (typeof calificacion !== "number")       return null;
+  if (!Number.isFinite(calificacion))         return null;
+  if (calificacion < 0 || calificacion > 10) return null;
+  if (
+    respuestas_json !== undefined &&
+    (typeof respuestas_json !== "object" || respuestas_json === null || Array.isArray(respuestas_json))
+  ) {
+    return null;
+  }
 
   return { alumno_id: Number(alumno_id), practica_id: Number(practica_id), calificacion, respuestas_json: (respuestas_json ?? {}) as Record<string, unknown> };
 }
@@ -28,8 +38,18 @@ function jsonResponse(data: unknown, status: number) {
   });
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
   try {
+    const user = await getValidatedSession(cookies);
+    if (!user) {
+      return jsonResponse({ error: "No autorizado" }, 401);
+    }
+
+    const roleData = await getUserRole(user.id);
+    if (roleData?.role !== "profesor" || roleData.estado !== "aprobado") {
+      return jsonResponse({ error: "Sin permisos" }, 403);
+    }
+
     const body    = await request.json();
     const payload = parseBody(body);
 
@@ -38,6 +58,11 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const { alumno_id, practica_id, calificacion, respuestas_json } = payload;
+    const ownsResult = await teacherOwnsResult(roleData.usuarioId, alumno_id, practica_id);
+
+    if (!ownsResult) {
+      return jsonResponse({ error: "Sin permisos para calificar este registro" }, 403);
+    }
 
     const { data, error } = await supabaseAdmin
       .from("resultados")
@@ -60,3 +85,42 @@ export const POST: APIRoute = async ({ request }) => {
     return jsonResponse({ error: "Error interno del servidor" }, 500);
   }
 };
+
+async function teacherOwnsResult(
+  profesorId: number,
+  alumnoId: number,
+  practicaId: number,
+) {
+  const { data: alumno, error: alumnoError } = await supabaseAdmin
+    .from("alumnos")
+    .select("grupo_id")
+    .eq("alumno_id", alumnoId)
+    .single();
+
+  if (alumnoError || !alumno?.grupo_id) {
+    return false;
+  }
+
+  const [{ data: grupo, error: grupoError }, { data: resultado, error: resultadoError }] =
+    await Promise.all([
+      supabaseAdmin
+        .from("grupos")
+        .select("grupo_id")
+        .eq("grupo_id", alumno.grupo_id)
+        .eq("profesor_id", profesorId)
+        .eq("activo", true)
+        .single(),
+      supabaseAdmin
+        .from("resultados")
+        .select("alumno_id, practica_id")
+        .eq("alumno_id", alumnoId)
+        .eq("practica_id", practicaId)
+        .single(),
+    ]);
+
+  if (grupoError || resultadoError) {
+    return false;
+  }
+
+  return !!grupo && !!resultado;
+}

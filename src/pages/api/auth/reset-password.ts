@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 
-import { supabase } from "../../../lib/supabase";
+import { createSupabaseServerClient } from "../../../lib/supabase";
 
 
 export const POST: APIRoute = async ({
@@ -9,6 +9,7 @@ export const POST: APIRoute = async ({
   redirect
 
 }) => {
+  const supabase = createSupabaseServerClient();
 
   const formData = await request.formData();
 
@@ -29,8 +30,7 @@ export const POST: APIRoute = async ({
     {
 
       redirectTo:
-
-      "http://localhost:4321/auth/update-password"
+      new URL("/auth/update-password", request.url).toString()
 
     }
 

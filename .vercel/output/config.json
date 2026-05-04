@@ -1,0 +1,140 @@
+{
+	"version": 3,
+	"routes": [
+		{
+			"handle": "filesystem"
+		},
+		{
+			"src": "^/_astro/(.*)$",
+			"headers": {
+				"cache-control": "public, max-age=31536000, immutable"
+			},
+			"continue": true
+		},
+		{
+			"src": "^/_server-islands/([^/]+?)/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/_image/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/admin/delete-student/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/admin/delete-teacher/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/admin/update-student/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/admin/update-teacher/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/admin/update-teacher-status/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/auth/callback/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/auth/register/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/auth/reset-password/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/auth/signin/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/auth/signout/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/auth/update-password/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/profesor/calificar/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/auth/forgot-password/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/auth/register/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/auth/register-teacher/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/auth/update-password/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/dashboard/admin/alumnos/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/dashboard/admin/profesores/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/dashboard/admin/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/dashboard/profesor/alumnos/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/dashboard/profesor/asignar/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/dashboard/profesor/calificar/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/dashboard/profesor/gestionar-grupos/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/dashboard/profesor/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/register/error/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/register/success/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/404/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/.*$",
+			"dest": "_render",
+			"status": 404
+		}
+	]
+}

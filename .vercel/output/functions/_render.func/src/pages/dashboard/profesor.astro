@@ -1,0 +1,67 @@
+---
+import DashboardLayout from "../../layouts/DashboardLayout.astro";
+
+import { requireProfesor } from "../../modules/auth/utils/requireProfesor";
+import { getTeacherStats } from "../../modules/profesor/services/profesorService";
+
+import "../../styles/profesor.css";
+
+
+/* validar sesión + rol */
+const auth = await requireProfesor(Astro.cookies);
+if ("redirect" in auth) return Astro.redirect(auth.redirect);
+const { user, roleData } = auth;
+
+
+const stats  = await getTeacherStats(roleData.usuarioId);
+const nombre = roleData.nombre ?? user.email;
+---
+
+<DashboardLayout
+  title="Dashboard profesor"
+  role="profesor"
+  userEmail={user.email}
+>
+
+<section class="teacher-dashboard">
+
+  <h1 class="teacher-title">
+    Bienvenido, Profesor {nombre}
+  </h1>
+
+  <div class="teacher-stats">
+
+    <div class="teacher-card">
+      <span>Grupos registrados</span>
+      <strong>{stats?.grupos ?? 0}</strong>
+    </div>
+
+    <div class="teacher-card">
+      <span>Prácticas activas</span>
+      <strong>{stats?.practicas ?? 0}</strong>
+    </div>
+
+    <div class="teacher-card">
+      <span>Alumnos registrados</span>
+      <strong>{stats?.alumnos ?? 0}</strong>
+    </div>
+
+  </div>
+
+  <div class="teacher-menu">
+
+    <a href="../dashboard/profesor/gestionar-grupos" class="teacher-item">
+      <span>📤 Crear grupo</span>
+      <span class="teacher-arrow">›</span>
+    </a>
+
+    <a href="../dashboard/profesor/asignar" class="teacher-item">
+      <span>🧪 Asignar práctica</span>
+      <span class="teacher-arrow">›</span>
+    </a>
+
+  </div>
+
+</section>
+
+</DashboardLayout>

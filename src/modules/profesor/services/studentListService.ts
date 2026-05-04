@@ -1,5 +1,4 @@
-import { supabase }
-from "../../../lib/supabase";
+import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 
 
 export async function getStudentListByGroup(
@@ -8,12 +7,11 @@ profesorId:number,
 grupoId:number
 
 ){
-
 /*
 verificar grupo pertenece al profesor
 */
 const { data: grupo } =
-await supabase
+await supabaseAdmin
 .from("grupos")
 .select("grupo_id")
 .eq("grupo_id", grupoId)
@@ -28,7 +26,7 @@ return [];
 alumnos del grupo
 */
 const { data: alumnos } =
-await supabase
+await supabaseAdmin
 .from("alumnos")
 .select(`
 alumno_id,
@@ -48,7 +46,7 @@ alumnos.map(a => a.alumno_id);
 
 
 const { data: usuarios } =
-await supabase
+await supabaseAdmin
 .from("usuarios")
 .select(`
 usuario_id,

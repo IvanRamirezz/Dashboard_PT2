@@ -1,37 +1,30 @@
-# Dashboard_PT2
+# Dashboard Web
 
-Aplicación web desarrollada con Astro para la gestión de usuarios, grupos y autenticación, utilizando Supabase como backend.
+Aplicacion web construida con Astro para autenticacion, gestion de usuarios, grupos y flujo de trabajo de administradores y profesores, usando Supabase como backend.
 
----
+## Requisitos
 
-## 🚀 Instalación
+- Node.js 24 recomendado
+- npm
+- Un proyecto de Supabase con las tablas y politicas necesarias
 
-Clonar el repositorio:
+## Instalacion
 
 ```bash
 git clone https://github.com/IvanRamirezz/Dashboard_PT2.git
 cd Dashboard_PT2
-```
-
-Instalar dependencias:
-
-```bash
 npm install
 ```
 
----
+## Variables de entorno
 
-## 🔐 Variables de entorno
-
-Este proyecto utiliza variables de entorno para manejar credenciales de Supabase.
-
-1. Crea un archivo `.env.local` en la raíz del proyecto basado en `.env.example`:
+Crea un archivo `.env.local` en la raiz del proyecto a partir de `.env.example`:
 
 ```bash
 cp .env.example .env.local
 ```
 
-2. Completa las variables necesarias:
+Configura estas variables:
 
 ```env
 PUBLIC_SUPABASE_URL=tu_url_de_supabase
@@ -39,50 +32,74 @@ PUBLIC_SUPABASE_ANON_KEY=tu_anon_key
 SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key
 ```
 
-⚠️ **Importante:**
+Notas importantes:
 
-* No subas archivos `.env` o `.env.local` al repositorio
-* No compartas tus credenciales
-* Regenera tus keys si crees que fueron expuestas
+- `PUBLIC_SUPABASE_URL` y `PUBLIC_SUPABASE_ANON_KEY` se usan en cliente y servidor.
+- `SUPABASE_SERVICE_ROLE_KEY` solo debe usarse en el servidor y nunca exponerse al frontend.
+- `.env` y `.env.local` no deben subirse al repositorio.
 
----
+## Desarrollo
 
-## ▶️ Ejecutar el proyecto
+Inicia el entorno local con:
 
 ```bash
 npm run dev
 ```
 
-El proyecto estará disponible en:
+La app queda disponible en `http://localhost:4321`.
 
+## Build
+
+Para compilar el proyecto:
+
+```bash
+npm run build
 ```
-http://localhost:4321
+
+Para previsualizar el resultado del build:
+
+```bash
+npm run preview
 ```
 
----
+## Autenticacion y recuperacion de contrasena
 
-## 🧠 Tecnologías utilizadas
+- El login y la validacion de sesiones dependen de Supabase Auth.
+- La recuperacion de contrasena redirige a `/auth/update-password` usando la URL actual de la peticion.
+- En Supabase debes permitir la URL de desarrollo y produccion correspondiente en la configuracion de redirecciones de Auth.
 
-* Astro
-* TypeScript
-* Supabase
+Ejemplo para desarrollo:
 
----
+```text
+http://localhost:4321/auth/update-password
+```
 
-## 📁 Estructura del proyecto
+## Stack
+
+- Astro
+- TypeScript
+- Supabase
+- Vercel adapter para despliegue server-side
+
+## Estructura general
 
 ```text
 src/
 ├── components/
+├── layouts/
+├── lib/
 ├── modules/
+│   ├── admin/
 │   ├── auth/
-│   └── profesor/
-├── pages/
-│   └── api/
+│   ├── profesor/
+│   └── users/
+└── pages/
+    ├── api/
+    ├── auth/
+    └── dashboard/
 ```
 
----
+## Notas
 
-## 📌 Notas
-
-Este proyecto forma parte del PT2 y tiene fines académicos.
+- El proyecto se compila con `output: "server"` y usa `@astrojs/vercel`.
+- Si despliegas en Vercel, usa una version de Node compatible con el runtime configurado.

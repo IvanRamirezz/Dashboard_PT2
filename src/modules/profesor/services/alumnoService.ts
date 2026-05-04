@@ -1,4 +1,4 @@
-import { supabase } from "../../../lib/supabase";
+import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 
 // Tipado explícito elimina el any[] y sirve de documentación implícita
 interface ResultadoAlumno {
@@ -38,7 +38,7 @@ export async function getStudentsByTeacher(
 // ─── Queries individuales (SRP: cada función hace exactamente una consulta) ──
 
 async function verificarGrupo(profesorId: number, grupoId: number) {
-  const { data } = await supabase
+  const { data } = await supabaseAdmin
     .from("grupos")
     .select("grupo_id")
     .eq("grupo_id",    grupoId)
@@ -48,7 +48,7 @@ async function verificarGrupo(profesorId: number, grupoId: number) {
 }
 
 async function fetchAlumnos(grupoId: number) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("alumnos")
     .select("alumno_id, boleta")
     .eq("grupo_id", grupoId);
@@ -58,7 +58,7 @@ async function fetchAlumnos(grupoId: number) {
 }
 
 async function fetchUsuarios(alumnoIds: number[]) {
-  const { data } = await supabase
+  const { data } = await supabaseAdmin
     .from("usuarios")
     .select("usuario_id, nombre, apellido_paterno, apellido_materno")
     .in("usuario_id", alumnoIds);
@@ -66,7 +66,7 @@ async function fetchUsuarios(alumnoIds: number[]) {
 }
 
 async function fetchResultados(alumnoIds: number[]) {
-  const { data } = await supabase
+  const { data } = await supabaseAdmin
     .from("resultados")
     .select("alumno_id, practica_id, calificacion, respuestas_json")
     .in("alumno_id", alumnoIds);
@@ -74,7 +74,7 @@ async function fetchResultados(alumnoIds: number[]) {
 }
 
 async function fetchPracticas(practicaIds: number[]) {
-  const { data } = await supabase
+  const { data } = await supabaseAdmin
     .from("practicas")
     .select("practica_id, titulo")
     .in("practica_id", practicaIds);
@@ -88,28 +88,15 @@ function construirNombre(usuario?: { nombre: string; apellido_paterno: string; a
   return `${usuario.nombre} ${usuario.apellido_paterno} ${usuario.apellido_materno}`;
 }
 
-function filaVacia(alumno: { alumno_id: number; boleta: string }, nombre: string): ResultadoAlumno {
-  return {
-    alumno_id:       alumno.alumno_id,
-    nombre,
-    boleta:          alumno.boleta,
-    practica:        "Sin práctica",
-    practica_id:     null,
-    calificacion:    null,
-    respuestas_json: null,
-  };
-}
-
 function construirLista(alumnos: any[], usuarios: any[], resultados: any[], practicas: any[]): ResultadoAlumno[] {
   const lista: ResultadoAlumno[] = [];
 
   for (const alumno of alumnos) {
     const usuario = usuarios.find(u => u.usuario_id === alumno.alumno_id);
-    const nombre  = construirNombre(usuario);
+    const nombre = construirNombre(usuario);
     const resultadosAlumno = resultados.filter(r => r.alumno_id === alumno.alumno_id);
 
     if (resultadosAlumno.length === 0) {
-      lista.push(filaVacia(alumno, nombre));
       continue;
     }
 

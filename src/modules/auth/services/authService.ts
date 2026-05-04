@@ -19,63 +19,66 @@ export async function registerUser(data: any) {
     matricula,
   } = data;
 
+  await ensureUniqueSubtypeData(role, boleta, matricula);
 
-  /*
-  1 crear usuario en auth
-  */
-  const { data: authData, error: authError } =
-    await supabaseAdmin.auth.admin.createUser({
+  let authUid: string | null = null;
+  let usuarioId: number | null = null;
 
-      email,
-      password,
+  try {
+    /*
+    1 crear usuario en auth
+    */
+    const { data: authData, error: authError } =
+      await supabaseAdmin.auth.admin.createUser({
 
-      email_confirm: false
+        email,
+        password,
 
-    });
+        email_confirm: false
+
+      });
 
 
-  if (authError) {
+    if (authError) {
 
-    const message = authError.message.toLowerCase();
+      const message = authError.message.toLowerCase();
 
-    if (
-      message.includes("already") ||
-      message.includes("exists") ||
-      message.includes("registered") ||
-      message.includes("duplicate")
-    ) {
+      if (
+        message.includes("already") ||
+        message.includes("exists") ||
+        message.includes("registered") ||
+        message.includes("duplicate")
+      ) {
 
-      throw new Error("EMAIL_EXISTS");
+        throw new Error("EMAIL_EXISTS");
+
+      }
+
+      throw new Error(authError.message);
 
     }
 
-    throw new Error(authError.message);
 
-  }
-
-
-  const authUid = authData.user.id;
+    authUid = authData.user.id;
 
 
-  /*
-  2 crear usuario en tabla usuarios
-  */
-  const usuario = await createUsuario(
+    /*
+    2 crear usuario en tabla usuarios
+    */
+    const usuario = await createUsuario(
 
-    authUid,
-    nombre,
-    apellidoPaterno,
-    apellidoMaterno
+      authUid,
+      nombre,
+      apellidoPaterno,
+      apellidoMaterno
 
-  );
+    );
 
+    usuarioId = usuario.usuario_id;
 
-  /*
-  3 crear subtipo
-  */
-
-  try {
-
+    /*
+    3 crear subtipo
+    */
     if (role === "student") {
 
       await createAlumno(
@@ -84,7 +87,6 @@ export async function registerUser(data: any) {
       );
 
     }
-
 
     if (role === "teacher") {
 
@@ -95,25 +97,67 @@ export async function registerUser(data: any) {
 
     }
 
-  }
-  catch (error:any) {
+    return authData.user;
+  } catch (error:any) {
+    await rollbackFailedRegistration(authUid, usuarioId);
 
     const message = error.message.toLowerCase();
 
     if (
       message.includes("duplicate") ||
-      message.includes("unique")
+      message.includes("unique") ||
+      error.message === "DATA_EXISTS"
     ) {
-
       throw new Error("DATA_EXISTS");
-
     }
 
     throw error;
-
   }
 
+}
 
-  return authData.user;
+async function ensureUniqueSubtypeData(
+  role: string,
+  boleta?: string,
+  matricula?: string,
+) {
+  if (role === "student" && boleta) {
+    const { data } = await supabaseAdmin
+      .from("alumnos")
+      .select("alumno_id")
+      .eq("boleta", boleta)
+      .maybeSingle();
 
+    if (data) {
+      throw new Error("DATA_EXISTS");
+    }
+  }
+
+  if (role === "teacher" && matricula) {
+    const { data } = await supabaseAdmin
+      .from("profesores")
+      .select("profesor_id")
+      .eq("matricula_trabajador", matricula)
+      .maybeSingle();
+
+    if (data) {
+      throw new Error("DATA_EXISTS");
+    }
+  }
+}
+
+async function rollbackFailedRegistration(
+  authUid: string | null,
+  usuarioId: number | null,
+) {
+  if (usuarioId) {
+    await supabaseAdmin
+      .from("usuarios")
+      .delete()
+      .eq("usuario_id", usuarioId);
+  }
+
+  if (authUid) {
+    await supabaseAdmin.auth.admin.deleteUser(authUid);
+  }
 }

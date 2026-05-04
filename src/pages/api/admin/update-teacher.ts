@@ -3,6 +3,7 @@ import type { APIRoute } from "astro";
 import { updateTeacherData } from "../../../modules/admin/services/adminService";
 import { getValidatedSession } from "../../../modules/auth/utils/sessionService";
 import { getUserRole } from "../../../modules/auth/services/userRoleService";
+import { getSafeRedirectPath } from "../../../modules/http/redirects";
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
@@ -25,7 +26,10 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
   const apellido_paterno   = String(form.get("apellido_paterno"));
   const apellido_materno   = String(form.get("apellido_materno"));
   const matricula_trabajador = String(form.get("matricula_trabajador"));
-  const redirectUrl        = String(form.get("redirect")) || "/dashboard/admin/profesores";
+  const redirectUrl = getSafeRedirectPath(
+    form.get("redirect")?.toString(),
+    "/dashboard/admin/profesores"
+  );
 
   /*
   actualizar datos del profesor

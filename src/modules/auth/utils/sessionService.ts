@@ -1,4 +1,4 @@
-import { supabase } from "../../../lib/supabase";
+import { createSupabaseServerClient } from "../../../lib/supabase";
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 import type { AstroCookies } from "astro";
 
@@ -11,6 +11,7 @@ export async function getValidatedSession(cookies: AstroCookies) {
   }
 
   try {
+    const supabase = createSupabaseServerClient();
     const { data, error } = await supabase.auth.getUser(accessToken.value);
 
     if (error || !data.user) {

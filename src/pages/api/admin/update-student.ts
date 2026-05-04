@@ -3,6 +3,7 @@ import type { APIContext } from "astro";
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 import { getValidatedSession } from "../../../modules/auth/utils/sessionService";
 import { getUserRole } from "../../../modules/auth/services/userRoleService";
+import { getSafeRedirectPath } from "../../../modules/http/redirects";
 
 export async function POST({ request, cookies }: APIContext) {
 
@@ -25,14 +26,10 @@ export async function POST({ request, cookies }: APIContext) {
   const apellido_paterno = String(formData.get("apellido_paterno"));
   const apellido_materno = String(formData.get("apellido_materno"));
   const boleta         = String(formData.get("boleta"));
-  const redirect       = String(formData.get("redirect"));
-
-  /*
-  validar redirect antes de operar
-  */
-  if (!redirect) {
-    return new Response("Redirect no definido", { status: 400 });
-  }
+  const redirectPath = getSafeRedirectPath(
+    formData.get("redirect")?.toString(),
+    "/dashboard/admin/alumnos"
+  );
 
   /*
   actualizar usuarios y alumnos en paralelo
@@ -60,6 +57,6 @@ export async function POST({ request, cookies }: APIContext) {
     return new Response("Error inesperado", { status: 500 });
   }
 
-  return Response.redirect(new URL(redirect, request.url), 303);
+  return Response.redirect(new URL(redirectPath, request.url), 303);
 
 }

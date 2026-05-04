@@ -1,7 +1,9 @@
 import type { APIRoute } from "astro";
-import { supabase } from "../../../lib/supabase";
+import { createSupabaseServerClient } from "../../../lib/supabase";
+import { getSessionCookieOptions } from "../../../modules/auth/utils/sessionCookies";
 
 export const GET: APIRoute = async ({ url, cookies, redirect }) => {
+  const supabase = createSupabaseServerClient();
   const authCode = url.searchParams.get("code");
 
   if (!authCode) {
@@ -17,10 +19,10 @@ export const GET: APIRoute = async ({ url, cookies, redirect }) => {
   const { access_token, refresh_token } = data.session;
 
   cookies.set("sb-access-token", access_token, {
-    path: "/",
+    ...getSessionCookieOptions(),
   });
   cookies.set("sb-refresh-token", refresh_token, {
-    path: "/",
+    ...getSessionCookieOptions(),
   });
 
   return redirect("/dashboard");

@@ -1,9 +1,9 @@
 // Con `output: 'static'` configurado:
 // export const prerender = false;
 import type { APIRoute } from "astro";
+import { clearSessionCookies } from "../../../modules/auth/utils/sessionCookies";
 
-export const GET: APIRoute = async ({ cookies, redirect }) => {
-  cookies.delete("sb-access-token", { path: "/" });
-  cookies.delete("sb-refresh-token", { path: "/" });
+export const POST: APIRoute = async ({ cookies, redirect }) => {
+  clearSessionCookies(cookies);
   return redirect("/");
 };

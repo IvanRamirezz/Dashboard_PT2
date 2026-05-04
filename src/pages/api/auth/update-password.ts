@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
-import { supabase } from "../../../lib/supabase";
+import { createSupabaseServerClient } from "../../../lib/supabase";
+import { clearSessionCookies } from "../../../modules/auth/utils/sessionCookies";
 
 
 export const POST: APIRoute = async ({
@@ -9,6 +10,7 @@ export const POST: APIRoute = async ({
   cookies
 
 }) => {
+  const supabase = createSupabaseServerClient();
 
   const formData = await request.formData();
 
@@ -53,9 +55,7 @@ export const POST: APIRoute = async ({
   limpiar cookies viejas
   */
 
-  cookies.delete("sb-access-token",{ path:"/" });
-  cookies.delete("sb-refresh-token",{ path:"/" });
-  cookies.delete("app-session-id",{ path:"/" });
+  clearSessionCookies(cookies);
 
 
   /*

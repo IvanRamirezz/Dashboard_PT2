@@ -1,9 +1,8 @@
-import { supabase } from "../../../lib/supabase";
+import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 
 export async function getTeacherStats(usuarioId: number) {
-
   /* grupos del profesor */
-  const { count: grupos } = await supabase
+  const { count: grupos } = await supabaseAdmin
     .from("grupos")
     .select("*", { count: "exact", head: true })
     .eq("profesor_id", usuarioId)
@@ -11,14 +10,14 @@ export async function getTeacherStats(usuarioId: number) {
 
 
   /* total practicas activas del sistema */
-  const { count: practicas } = await supabase
+  const { count: practicas } = await supabaseAdmin
     .from("practicas")
     .select("*", { count: "exact", head: true })
     .eq("activo", true);
 
 
   /* alumnos en los grupos del profesor */
-  const { data: gruposProfesor } = await supabase
+  const { data: gruposProfesor } = await supabaseAdmin
     .from("grupos")
     .select("grupo_id")
     .eq("profesor_id", usuarioId)
@@ -30,7 +29,7 @@ export async function getTeacherStats(usuarioId: number) {
 
   if (gruposIds.length > 0) {
 
-    const { count } = await supabase
+    const { count } = await supabaseAdmin
       .from("alumnos")
       .select("*", { count: "exact", head: true })
       .in("grupo_id", gruposIds);
