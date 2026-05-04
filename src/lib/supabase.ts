@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import type { AstroCookies } from "astro";
 
 export function createSupabaseServerClient() {
   return createClient(
@@ -11,6 +12,6 @@ export function createSupabaseServerClient() {
         persistSession: false,
         detectSessionInUrl: false,
       },
-    },
+    }
   );
 }

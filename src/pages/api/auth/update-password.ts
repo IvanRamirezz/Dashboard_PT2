@@ -1,88 +1,35 @@
 import type { APIRoute } from "astro";
-import { createSupabaseServerClient } from "../../../lib/supabase";
+import { supabaseAdmin } from "../../../lib/supabaseAdmin";
 import { clearSessionCookies } from "../../../modules/auth/utils/sessionCookies";
 
-
-export const POST: APIRoute = async ({
-
-  request,
-  redirect,
-  cookies,
-
-}) => {
-  const supabase = createSupabaseServerClient();
-
+export const POST: APIRoute = async ({ request, redirect, cookies }) => {
   const formData = await request.formData();
-
   const password = formData.get("password")?.toString();
   const accessToken = cookies.get("sb-access-token")?.value;
-  const refreshToken = cookies.get("sb-refresh-token")?.value;
+  console.log("access_token:", cookies.get("sb-access-token")?.value ? "OK" : "MISSING");
 
-
-  if (!password) {
-
+  if (!password || !accessToken) {
     return redirect("/auth/update-password?error=1");
-
   }
 
-  if (!accessToken || !refreshToken) {
+  // Extraer el user id del JWT
+  const payload = JSON.parse(atob(accessToken.split(".")[1]));
+  const userId = payload.sub;
 
+  if (!userId) {
     return redirect("/auth/update-password?error=1");
-
   }
 
-
-  const { error: sessionError } = await supabase.auth.setSession({
-    access_token: accessToken,
-    refresh_token: refreshToken,
+  // Actualizar contraseña directo con admin, sin necesitar el refresh token
+  const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+    password,
   });
-
-  if (sessionError) {
-
-    return redirect("/auth/update-password?error=1");
-
-  }
-
-
-  /*
-  Supabase detecta automáticamente
-  el usuario desde el link seguro
-  */
-
-  const { error } = await supabase.auth.updateUser({
-
-    password
-
-  });
-
 
   if (error) {
-
     return redirect("/auth/update-password?error=1");
-
   }
-
-
-  /*
-  cerrar sesión del recovery token
-  para que el link no pueda reutilizarse
-  */
-
-  await supabase.auth.signOut();
-
-
-  /*
-  limpiar cookies viejas
-  */
 
   clearSessionCookies(cookies);
 
-
-  /*
-  quedarse en la misma página
-  mostrando mensaje de éxito
-  */
-
   return redirect("/auth/update-password?success=1");
-
 };
