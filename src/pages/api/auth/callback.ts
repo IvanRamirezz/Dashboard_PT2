@@ -25,5 +25,5 @@ export const GET: APIRoute = async ({ url, cookies, redirect }) => {
     ...getSessionCookieOptions(),
   });
 
-  return redirect("/auth/update-password");
+  return redirect("/dashboard");
 };

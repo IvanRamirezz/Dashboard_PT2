@@ -29,7 +29,8 @@ export const POST: APIRoute = async ({
 
     {
 
-      redirectTo: new URL("/api/auth/callback", request.url).toString()
+      redirectTo:
+      new URL("/auth/update-password", request.url).toString()
 
     }
 

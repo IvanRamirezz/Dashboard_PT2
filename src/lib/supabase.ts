@@ -6,7 +6,7 @@ export function createSupabaseServerClient() {
     import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
     {
       auth: {
-        flowType: "pkce",
+        flowType: "implicit",
         autoRefreshToken: false,
         persistSession: false,
         detectSessionInUrl: false,
