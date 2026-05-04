@@ -7,7 +7,7 @@ export const POST: APIRoute = async ({
 
   request,
   redirect,
-  cookies
+  cookies,
 
 }) => {
   const supabase = createSupabaseServerClient();
@@ -15,9 +15,29 @@ export const POST: APIRoute = async ({
   const formData = await request.formData();
 
   const password = formData.get("password")?.toString();
+  const accessToken = cookies.get("sb-access-token")?.value;
+  const refreshToken = cookies.get("sb-refresh-token")?.value;
 
 
   if (!password) {
+
+    return redirect("/auth/update-password?error=1");
+
+  }
+
+  if (!accessToken || !refreshToken) {
+
+    return redirect("/auth/update-password?error=1");
+
+  }
+
+
+  const { error: sessionError } = await supabase.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  });
+
+  if (sessionError) {
 
     return redirect("/auth/update-password?error=1");
 
