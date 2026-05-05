@@ -1,4 +1,7 @@
 import { supabaseAdmin } from "../../../lib/supabaseAdmin";
+import { createSupabaseServerClient } from "../../../lib/supabase";
+
+const supabase = createSupabaseServerClient();
 
 import {
   createUsuario,
@@ -25,22 +28,20 @@ export async function registerUser(data: any) {
   let usuarioId: number | null = null;
 
   try {
+
     /*
-    1 crear usuario en auth
+    1 crear usuario en auth (ENVÍA CORREO AUTOMÁTICO)
     */
     const { data: authData, error: authError } =
-      await supabaseAdmin.auth.admin.createUser({
-
+      await supabase.auth.signUp({
         email,
         password,
-
-        email_confirm: false
-
+        options: {
+          emailRedirectTo: "http://localhost:4321/auth/callback"
+        }
       });
 
-
     if (authError) {
-
       const message = authError.message.toLowerCase();
 
       if (
@@ -49,29 +50,27 @@ export async function registerUser(data: any) {
         message.includes("registered") ||
         message.includes("duplicate")
       ) {
-
         throw new Error("EMAIL_EXISTS");
-
       }
 
       throw new Error(authError.message);
-
     }
 
+    // ⚠️ Validación importante
+    if (!authData.user) {
+      throw new Error("AUTH_UID_MISSING");
+    }
 
     authUid = authData.user.id;
-
 
     /*
     2 crear usuario en tabla usuarios
     */
     const usuario = await createUsuario(
-
       authUid,
       nombre,
       apellidoPaterno,
       apellidoMaterno
-
     );
 
     usuarioId = usuario.usuario_id;
@@ -80,28 +79,20 @@ export async function registerUser(data: any) {
     3 crear subtipo
     */
     if (role === "student") {
-
-      await createAlumno(
-        usuario.usuario_id,
-        boleta
-      );
-
+      await createAlumno(usuario.usuario_id, boleta);
     }
 
     if (role === "teacher") {
-
-      await createProfesor(
-        usuario.usuario_id,
-        matricula
-      );
-
+      await createProfesor(usuario.usuario_id, matricula);
     }
 
     return authData.user;
-  } catch (error:any) {
+
+  } catch (error: any) {
+
     await rollbackFailedRegistration(authUid, usuarioId);
 
-    const message = error.message.toLowerCase();
+    const message = error.message?.toLowerCase?.() || "";
 
     if (
       message.includes("duplicate") ||
@@ -111,11 +102,17 @@ export async function registerUser(data: any) {
       throw new Error("DATA_EXISTS");
     }
 
+    if (error.message === "AUTH_UID_MISSING") {
+      throw new Error("UNKNOWN_ERROR");
+    }
+
     throw error;
   }
-
 }
 
+/*
+VALIDACIONES DE DUPLICADOS
+*/
 async function ensureUniqueSubtypeData(
   role: string,
   boleta?: string,
@@ -146,6 +143,9 @@ async function ensureUniqueSubtypeData(
   }
 }
 
+/*
+ROLLBACK SI FALLA TODO
+*/
 async function rollbackFailedRegistration(
   authUid: string | null,
   usuarioId: number | null,

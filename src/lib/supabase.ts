@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import type { AstroCookies } from "astro";
+
 
 export function createSupabaseServerClient() {
   return createClient(
@@ -7,10 +7,10 @@ export function createSupabaseServerClient() {
     import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
     {
       auth: {
-        flowType: "implicit",
+        flowType: "pkce",
         autoRefreshToken: false,
         persistSession: false,
-        detectSessionInUrl: false,
+        detectSessionInUrl: true,
       },
     }
   );
