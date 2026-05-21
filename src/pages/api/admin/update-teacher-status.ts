@@ -1,7 +1,7 @@
 import type { APIContext } from "astro";
-import { supabaseAdmin } from "../../../lib/supabaseAdmin";
-import { getValidatedSession } from "../../../modules/auth/utils/sessionService";
-import { getUserRole } from "../../../modules/auth/services/userRoleService";
+import { supabaseAdmin } from "../../../data/client/supabaseAdmin";
+import { getValidatedSession } from "../../../business/auth/sessionService";
+import { getUserRole } from "../../../business/auth/userRoleService";
 
 export async function POST({ request, cookies }: APIContext) {
 

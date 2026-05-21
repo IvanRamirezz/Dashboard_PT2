@@ -1,10 +1,10 @@
 ---
-import DashboardLayout from "../../layouts/DashboardLayout.astro";
+import DashboardLayout from "../../presentation/layouts/DashboardLayout.astro";
 
-import { requireProfesor } from "../../modules/auth/utils/requireProfesor";
-import { getTeacherStats } from "../../modules/profesor/services/profesorService";
+import { requireProfesor } from "../../business/auth/requireProfesor";
+import { getTeacherStats } from "../../business/profesor/profesorService";
 
-import "../../styles/profesor.css";
+import "../../presentation/styles/profesor.css";
 
 
 /* validar sesión + rol */

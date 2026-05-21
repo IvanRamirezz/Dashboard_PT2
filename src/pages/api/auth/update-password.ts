@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
-import { supabaseAdmin } from "../../../lib/supabaseAdmin";
-import { clearSessionCookies } from "../../../modules/auth/utils/sessionCookies";
+import { supabaseAdmin } from "../../../data/client/supabaseAdmin";
+import { clearSessionCookies } from "../../../business/auth/sessionCookies";
 
 export const POST: APIRoute = async ({ request, redirect, cookies }) => {
   const formData = await request.formData();

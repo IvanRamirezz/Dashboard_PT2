@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
-import { createSupabaseServerClient } from "../../../lib/supabase";
-import { getSessionCookieOptions } from "../../../modules/auth/utils/sessionCookies";
+import { createSupabaseServerClient } from "../../../data/client/supabase";
+import { getSessionCookieOptions } from "../../../business/auth/sessionCookies";
 
 export const GET: APIRoute = async ({ url, cookies, redirect }) => {
   const supabase = createSupabaseServerClient();

@@ -1,15 +1,15 @@
 ---
-import DashboardLayout from "../../../layouts/DashboardLayout.astro";
-import TeacherSection from "../../../components/profesor/TeacherSection.astro";
-import Toast from "../../../components/ui/Toast.astro";
+import DashboardLayout from "../../../presentation/layouts/DashboardLayout.astro";
+import TeacherSection from "../../../presentation/components/profesor/TeacherSection.astro";
+import Toast from "../../../presentation/components/ui/Toast.astro";
 
-import { requireProfesor } from "../../../modules/auth/utils/requireProfesor";
+import { requireProfesor } from "../../../business/auth/requireProfesor";
 import {
   getAssignmentFormData,
   assignPracticeToGroup
-} from "../../../modules/profesor/services/asignacionService";
+} from "../../../business/profesor/asignacionService";
 
-import "../../../styles/profesor.css";
+import "../../../presentation/styles/profesor.css";
 
 /* validar sesión + rol */
 const auth = await requireProfesor(Astro.cookies);

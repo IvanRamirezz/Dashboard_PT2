@@ -1,17 +1,17 @@
 ---
-import DashboardLayout from "../../../layouts/DashboardLayout.astro";
-import TeacherSection  from "../../../components/profesor/TeacherSection.astro";
-import GrupoSelector   from "../../../components/profesor/GrupoSelector.astro";
-import Toast           from "../../../components/ui/Toast.astro";
+import DashboardLayout from "../../../presentation/layouts/DashboardLayout.astro";
+import TeacherSection  from "../../../presentation/components/profesor/TeacherSection.astro";
+import GrupoSelector   from "../../../presentation/components/profesor/GrupoSelector.astro";
+import Toast           from "../../../presentation/components/ui/Toast.astro";
 
-import { requireProfesor } from "../../../modules/auth/utils/requireProfesor";
+import { requireProfesor } from "../../../business/auth/requireProfesor";
 import {
   getGroupsByTeacher,
   createGroup,
   deactivateGroupByName 
-} from "../../../modules/profesor/services/grupoService";
+} from "../../../business/profesor/grupoService";
 
-import "../../../styles/profesor.css";
+import "../../../presentation/styles/profesor.css";
 
 /* validar sesión */
 const auth = await requireProfesor(Astro.cookies);

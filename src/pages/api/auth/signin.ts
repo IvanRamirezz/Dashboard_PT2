@@ -1,10 +1,10 @@
 import type { APIRoute } from "astro";
 
-import { createSupabaseServerClient } from "../../../lib/supabase";
-import { supabaseAdmin } from "../../../lib/supabaseAdmin";
+import { createSupabaseServerClient } from "../../../data/client/supabase";
+import { supabaseAdmin } from "../../../data/client/supabaseAdmin";
 
-import { getUserRole } from "../../../modules/auth/services/userRoleService";
-import { getSessionCookieOptions } from "../../../modules/auth/utils/sessionCookies";
+import { getUserRole } from "../../../business/auth/userRoleService";
+import { getSessionCookieOptions } from "../../../business/auth/sessionCookies";
 
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {

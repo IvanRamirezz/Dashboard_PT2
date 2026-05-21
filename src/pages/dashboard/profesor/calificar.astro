@@ -1,14 +1,14 @@
 ---
-import DashboardLayout from "../../../layouts/DashboardLayout.astro";
-import GrupoSelector from "../../../components/profesor/GrupoSelector.astro";
-import TeacherSection from "../../../components/profesor/TeacherSection.astro";
+import DashboardLayout from "../../../presentation/layouts/DashboardLayout.astro";
+import GrupoSelector from "../../../presentation/components/profesor/GrupoSelector.astro";
+import TeacherSection from "../../../presentation/components/profesor/TeacherSection.astro";
 
-import { requireProfesor } from "../../../modules/auth/utils/requireProfesor";
-import { getGroupsByTeacher } from "../../../modules/profesor/services/grupoService";
-import { getStudentsByTeacher } from "../../../modules/profesor/services/alumnoService";
-import { getAssignedPracticesByGroup } from "../../../modules/profesor/services/asignacionService";
+import { requireProfesor } from "../../../business/auth/requireProfesor";
+import { getGroupsByTeacher } from "../../../business/profesor/grupoService";
+import { getStudentsByTeacher } from "../../../business/profesor/alumnoService";
+import { getAssignedPracticesByGroup } from "../../../business/profesor/asignacionService";
 
-import "../../../styles/profesor.css";
+import "../../../presentation/styles/profesor.css";
 
 
 const auth = await requireProfesor(Astro.cookies);

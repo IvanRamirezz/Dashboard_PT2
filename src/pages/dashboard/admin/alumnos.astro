@@ -1,62 +1,39 @@
 ---
-import DashboardLayout from "../../../layouts/DashboardLayout.astro";
+// src/pages/dashboard/admin/alumnos.astro
+import DashboardLayout from "../../../presentation/layouts/DashboardLayout.astro";
+import UserEditor from "../../../presentation/components/admin/UserEditor.astro";
+import { getValidatedSession } from "../../../business/auth/sessionService";
+import { getUserRole } from "../../../business/auth/userRoleService";
+import { getStudentByBoleta } from "../../../business/admin/studentService";
 
-import UserEditor from "../../../components/admin/UserEditor.astro";
-
-import { getValidatedSession } from "../../../modules/auth/utils/sessionService";
-import { getUserRole } from "../../../modules/auth/services/userRoleService";
-
-import { getStudentByBoleta }
-from "../../../modules/admin/services/studentService";
-
-
-const user =
-await getValidatedSession(Astro.cookies);
-
+const user = await getValidatedSession(Astro.cookies);
 if (!user) return Astro.redirect("/");
 
-const roleData =
-await getUserRole(user.id);
+const roleData = await getUserRole(user.id);
+if (roleData?.role !== "admin") return Astro.redirect("/");
 
-if (roleData?.role !== "admin")
-return Astro.redirect("/");
+const boleta  = Astro.url.searchParams.get("boleta") ?? undefined;
+const updated = Astro.url.searchParams.get("updated") ?? undefined;
 
-
-const boleta =
-Astro.url.searchParams.get("boleta");
-
-const updated =
-Astro.url.searchParams.get("updated");
-
-
-let student = null;
-
-if (boleta) {
-
-student =
-await getStudentByBoleta(boleta);
-
-}
+const student = boleta ? await getStudentByBoleta(boleta) : null;
 ---
 
 <DashboardLayout
-    title="Gestión de alumno"
-    role="admin"
-    userEmail={user.email}
+  title="Gestión de alumno"
+  role="admin"
+  userEmail={user.email ?? ""}
 >
-
-<UserEditor
+  <UserEditor
     title="Gestión de alumno"
     description="Gestiona la información de los alumnos registrados. Busca por matrícula, actualiza sus datos o da de baja su registro en el sistema."
     searchName="boleta"
     searchLabel="Número de boleta"
     idField="alumno_id"
     identifierField="boleta"
-    identifierValue={boleta ?? undefined}
+    identifierValue={boleta}
     updateAction="/api/admin/update-student"
     deleteAction="/api/admin/delete-student"
     user={student}
     updated={updated}
-/>
-
+  />
 </DashboardLayout>

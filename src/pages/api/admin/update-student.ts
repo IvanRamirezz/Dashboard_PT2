@@ -1,9 +1,9 @@
 import type { APIContext } from "astro";
 
-import { supabaseAdmin } from "../../../lib/supabaseAdmin";
-import { getValidatedSession } from "../../../modules/auth/utils/sessionService";
-import { getUserRole } from "../../../modules/auth/services/userRoleService";
-import { getSafeRedirectPath } from "../../../modules/http/redirects";
+import { supabaseAdmin } from "../../../data/client/supabaseAdmin";
+import { getValidatedSession } from "../../../business/auth/sessionService";
+import { getUserRole } from "../../../business/auth/userRoleService";
+import { getSafeRedirectPath } from "../../../business/auth/redirects";
 
 export async function POST({ request, cookies }: APIContext) {
 

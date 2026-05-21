@@ -1,13 +1,13 @@
 ---
-import DashboardLayout from "../../../layouts/DashboardLayout.astro";
-import GrupoSelector from "../../../components/profesor/GrupoSelector.astro";
-import TeacherSection from "../../../components/profesor/TeacherSection.astro";
+import DashboardLayout from "../../../presentation/layouts/DashboardLayout.astro";
+import GrupoSelector from "../../../presentation/components/profesor/GrupoSelector.astro";
+import TeacherSection from "../../../presentation/components/profesor/TeacherSection.astro";
 
-import { requireProfesor } from "../../../modules/auth/utils/requireProfesor";
-import { getGroupsByTeacher } from "../../../modules/profesor/services/grupoService";
-import { getStudentListByGroup } from "../../../modules/profesor/services/studentListService";
+import { requireProfesor } from "../../../business/auth/requireProfesor";
+import { getGroupsByTeacher } from "../../../business/profesor/grupoService";
+import { getStudentListByGroup } from "../../../business/profesor/studentListService";
 
-import "../../../styles/profesor.css";
+import "../../../presentation/styles/profesor.css";
 
 
 /* validar sesión + rol */

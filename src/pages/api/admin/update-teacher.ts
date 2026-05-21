@@ -1,9 +1,9 @@
 import type { APIRoute } from "astro";
 
-import { updateTeacherData } from "../../../modules/admin/services/adminService";
-import { getValidatedSession } from "../../../modules/auth/utils/sessionService";
-import { getUserRole } from "../../../modules/auth/services/userRoleService";
-import { getSafeRedirectPath } from "../../../modules/http/redirects";
+import { updateTeacherData } from "../../../business/admin/adminService";
+import { getValidatedSession } from "../../../business/auth/sessionService";
+import { getUserRole } from "../../../business/auth/userRoleService";
+import { getSafeRedirectPath } from "../../../business/auth/redirects";
 
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 

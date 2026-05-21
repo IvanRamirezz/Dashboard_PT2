@@ -1,6 +1,6 @@
 import type { APIContext } from "astro";
-import { validateRegister } from "../../../modules/auth/validators/authValidator";
-import { registerUser } from "../../../modules/auth/services/authService";
+import { validateRegister } from "../../../business/auth/authValidator";
+import { registerUser } from "../../../business/auth/authService";
 
 export async function POST({ request, redirect }: APIContext) {
 
