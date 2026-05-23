@@ -1,362 +1,202 @@
-.auth-container{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  min-height:100vh;
-  padding:20px;
+/* ============================================================
+   AUTH — signin, forgot-password, update-password
+   ============================================================ */
+
+/* ── Contenedor centrado ── */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: var(--sp-5);
 }
 
-.auth-card{
-  width:100%;
-  max-width:420px;
-
-  background:var(--bg-card);
-  padding:32px;
-  border-radius:16px;
-
-  box-shadow:0 20px 40px rgba(0,0,0,0.35);
-
-  display:flex;
-  flex-direction:column;
-  gap:16px;
+/* ── Card ── */
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--bg-card);
+  padding: var(--sp-8);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
 }
 
-/* textos */
-
-.title{
-  text-align:center;
-  color:var(--text-main);
+/* ── Encabezado ── */
+.title {
+  text-align: center;
+  font-size: var(--font-xl);
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.2;
 }
 
-.subtitle{
-  text-align:center;
-  color:var(--text-main);
-  opacity:.85;
-  font-size:.95rem;
+.subtitle {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-sm);
+  line-height: 1.6;
 }
 
-/* field */
-
-.field{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
+/* ── Formulario ── */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
 }
 
-.label{
-  font-size:.85rem;
-  font-weight:600;
-  color:var(--text-main);
+/* ── Field ── */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
 }
 
-
-/* button */
-
-.btn{
-  margin-top:10px;
-
-  padding:12px;
-
-  border-radius:8px;
-
-  border:none;
-
-  background:var(--primary);
-
-  color:white;
-
-  font-weight:600;
-
-  cursor:pointer;
+.field label {
+  font-weight: 600;
+  font-size: var(--font-sm);
+  color: var(--text-main);
 }
 
-.btn:hover{
-  background:var(--primary-hover);
+.field input {
+  padding: 11px var(--sp-3);
+  border-radius: var(--radius);
+  border: 1.5px solid var(--primary);
+  font-size: var(--font-base);
+  background: var(--text-main);
+  color: var(--text-dark);
+  transition: var(--transition);
+  width: 100%;
 }
 
-/* alerts */
-
-.alert{
-  padding:10px;
-
-  border-radius:8px;
-
-  font-size:.9rem;
-
-  text-align:center;
+.field input:focus {
+  outline: none;
+  border-color: var(--primary-hover);
+  box-shadow: 0 0 0 3px rgba(52,91,99,0.20);
+  background: white;
 }
 
-.alert-error{
-  border:1px solid var(--error);
-  color:var(--error);
-  background:rgba(239,68,68,0.12);
+/* autofill claro (inputs con fondo claro) */
+.field input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--text-main) inset;
+  -webkit-text-fill-color: var(--text-dark);
 }
 
-.alert-success{
-  border:1px solid var(--success);
-  color:var(--success);
-  background:rgba(34,197,94,0.15);
+/* ── Password toggle ── */
+.password-container {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.forgot-link{
+.password-container input { padding-right: 44px; }
 
-  text-align:center;
-
-  margin-top:-6px;
-
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  opacity: 0.55;
+  transition: opacity var(--transition);
 }
 
-.forgot-link a{
+.toggle-password:hover { opacity: 1; }
+.toggle-password img   { width: 20px; height: 20px; }
 
-  font-size:.85rem;
-
-  color:var(--text-muted);
-
-  text-decoration:none;
-
+/* ── Alertas ── */
+.alert {
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-sm);
+  text-align: center;
+  line-height: 1.5;
 }
 
-.forgot-link a:hover{
-
-  color:var(--text-main);
-
-  text-decoration:underline;
-
+.alert-error {
+  border: 1px solid var(--error);
+  color: var(--error);
+  background: var(--error-bg);
 }
 
-/* links */
-
-.register-link{
-
-  margin-top:18px;
-
-  text-align:center;
-
-  font-size:.9rem;
-
-  color:var(--text-main);
-
-  display:flex;
-
-  flex-direction:column;
-
-  gap:6px;
-
+.alert-success {
+  border: 1px solid var(--success);
+  color: var(--success);
+  background: var(--success-bg);
 }
 
-.register-link a{
-
-  color:var(--text-main);
-
-  text-decoration:none;
-
-  border:1px solid var(--primary);
-
-  padding:8px 14px;
-
-  border-radius:8px;
-
-  display:inline-block;
-
-  transition:.2s;
-
+/* ── Botón principal ── */
+.btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--primary);
+  color: white;
+  font-size: var(--font-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+  display: block;
 }
 
-.register-link a:hover{
-
-  background:var(--primary);
-
+.btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
+.btn:active { transform: translateY(0); }
 
-/* forgot password link */
-
-.forgot-link{
-
-  text-align:center;
-
-  margin-top:-6px;
-
+/* ── Botón outline ── */
+.btn-outline {
+  width: 100%;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--primary);
+  background: transparent;
+  color: var(--text-main);
+  font-size: var(--font-base);
+  font-weight: 600;
+  text-align: center;
+  display: block;
+  transition: var(--transition);
 }
 
-.forgot-link a{
-
-  font-size:.85rem;
-
-  color:var(--text-muted);
-
-  text-decoration:none;
-
+.btn-outline:hover {
+  background: var(--primary);
+  color: white;
 }
 
-.forgot-link a:hover{
-
-  color:var(--text-main);
-
-  text-decoration:underline;
-
+/* ── Links secundarios ── */
+.register-link {
+  text-align: center;
+  font-size: var(--font-sm);
+  color: var(--text-main);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
 }
 
+.forgot-link { text-align: center; }
 
-/* FIELD */
-
-.field{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
+.forgot-link a {
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+  transition: color var(--transition);
 }
 
-.field label{
-  font-weight:700;
-  font-size:.95rem;
-  color:#D4ECDD;
+.forgot-link a:hover {
+  color: var(--text-main);
+  text-decoration: underline;
 }
 
-.req{
-  color:#D4ECDD;
-}
-
-.field input{
-  padding:12px;
-  border-radius:10px;
-  border:1px solid #345B63;
-  font-size:1rem;
-  background:#D4ECDD;
-  color:#112031;
-  transition:.2s;
-}
-
-.field input:focus{
-  outline:none;
-  border-color:#345B63;
-  background:white;
-}
-
-/* evita fondo blanco en autofill */
-
-input:-webkit-autofill{
-
-  -webkit-box-shadow:0 0 0 1000px var(--bg-main) inset;
-
-  -webkit-text-fill-color:var(--text-main);
-
-  transition: background-color 9999s ease-in-out 0s;
-
-}
-
-
-/* BUTTON */
-
-.btn{
-
-  width:100%;
-
-  margin-top:12px;
-
-  padding:12px;
-
-  border-radius:8px;
-
-  border:none;
-
-  background:var(--primary);
-
-  color:white;
-
-  font-size:1rem;
-
-  font-weight:600;
-
-  cursor:pointer;
-
-  transition:.2s;
-
-}
-
-.btn:hover{
-
-  background:var(--primary-hover);
-
-}
-
-
-/* OUTLINE BUTTON */
-
-.btn-outline{
-
-  width:100%;
-
-  margin-top:8px;
-
-  padding:10px;
-
-  border-radius:8px;
-
-  border:1px solid var(--primary);
-
-  background:transparent;
-
-  color:var(--text-main);
-
-  text-decoration:none;
-
-  display:inline-block;
-
-  text-align:center;
-
-  transition:.2s;
-
-}
-
-.btn-outline:hover{
-
-  background:var(--primary);
-
-}
-
-
-/* spacing fixes */
-
-form{
-
-  display:flex;
-
-  flex-direction:column;
-
-  gap:14px;
-
-}
-
-.password-container{
-  position:relative;
-  display:flex;
-  align-items:center;
-}
-
-.password-container input{
-  width:100%;
-  padding-right:42px;
-}
-
-.toggle-password{
-  position:absolute;
-  right:10px;
-  background:none;
-  border:none;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:0;
-}
-
-.toggle-password img{
-  width:20px;
-  height:20px;
-  opacity:.7;
-  transition:.2s;
-}
-
-.toggle-password:hover img{
-  opacity:1;
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .auth-card { padding: var(--sp-6); }
 }

@@ -1,5 +1,6 @@
 ---
 // src/presentation/layouts/DashboardLayout.astro
+import Layout from "./Layout.astro";
 import "../styles/dashboard.css";
 import Sidebar from "../components/dashboard/Sidebar.astro";
 import Header from "../components/dashboard/Header.astro";
@@ -7,28 +8,20 @@ import Header from "../components/dashboard/Header.astro";
 interface Props {
   title: string;
   role: string;
-  userEmail: string | undefined;  // ← acepta undefined aquí
+  userEmail: string | undefined;
 }
 
 const { title, role, userEmail } = Astro.props;
 ---
 
-<!DOCTYPE html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title}</title>
-  </head>
-  <body>
-    <div class="dashboard">
-      <Sidebar role={role} />
-      <div class="main">
-        <Header email={userEmail ?? ""} />
-        <main class="content">
-          <slot />
-        </main>
-      </div>
+<Layout title={title}>
+  <div class="dashboard">
+    <Sidebar role={role} />
+    <div class="main">
+      <Header email={userEmail ?? ""} />
+      <main class="content">
+        <slot />
+      </main>
     </div>
-  </body>
-</html>
+  </div>
+</Layout>

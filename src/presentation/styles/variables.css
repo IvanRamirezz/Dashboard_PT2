@@ -1,16 +1,68 @@
+/* ============================================================
+   VARIABLES — única fuente de verdad
+   Todos los demás CSS importan de aquí via global.css
+   ============================================================ */
 :root {
 
-  --bg-main: #112031;
-  --bg-card: #152D35;
+  /* ── Fondos ── */
+  --bg-main:      #112031;
+  --bg-card:      #152D35;
+  --bg-dashboard: #D4ECDD;
 
-  --primary: #345B63;
+  /* ── Marca ── */
+  --primary:       #345B63;
   --primary-hover: #2b4c53;
+  --secondary:     #152D35;
+  --dark:          #112031;
 
+  /* ── Texto ── */
   --text-main: #D4ECDD;
   --text-muted: #8FA3A8;
+  --text-dark:  #112031;
 
-  --success: #22c55e;
-  --error: #ef4444;
+  /* ── Semánticos ── */
+  --success:      #22c55e;
+  --success-bg:   rgba(34,197,94,0.15);
+  --error:        #ef4444;
+  --error-bg:     rgba(239,68,68,0.12);
+  --warning:      #f59e0b;
+  --warning-bg:   #ffe7c2;
+  --warning-text: #b45309;
+  --info:         #3b82f6;
+  --danger:       #dc2626;
+  --danger-hover: #b91c1c;
 
-  --radius: 12px;
+  /* ── Forma ── */
+  --radius-sm: 8px;
+  --radius:    12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  /* ── Sombras ── */
+  --shadow-sm: 0 2px 8px   rgba(0,0,0,0.05);
+  --shadow-md: 0 8px 24px  rgba(0,0,0,0.10);
+  --shadow-lg: 0 20px 40px rgba(0,0,0,0.35);
+
+  /* ── Tipografía ── */
+  --font-xs:   0.8125rem;  /* 13px */
+  --font-sm:   0.875rem;   /* 14px */
+  --font-base: 1rem;       /* 16px */
+  --font-md:   1.125rem;   /* 18px */
+  --font-lg:   1.25rem;    /* 20px */
+  --font-xl:   1.5rem;     /* 24px */
+  --font-2xl:  2rem;       /* 32px */
+
+  /* ── Espaciado ── */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+
+  /* ── Transición base ── */
+  --transition: 0.18s ease;
 }
