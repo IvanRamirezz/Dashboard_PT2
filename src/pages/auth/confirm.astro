@@ -1,22 +1,31 @@
 ---
 // src/pages/auth/confirm.astro
 ---
-<script>
-  const hash   = window.location.hash.substring(1);
-  const params = new URLSearchParams(hash);
-  const type   = params.get("type");
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/images/LogoFiberLabvr.png" />
+    <title>FiberLab VR</title>
+  </head>
+  <body>
+    <script>
+      const hash   = window.location.hash.substring(1);
+      const params = new URLSearchParams(hash);
+      const type   = params.get("type");
 
-  if (type === "signup") {
-    window.location.href = "/?confirmed=1";  // ← raíz, no /auth/signin
-  } else if (type === "recovery") {
-    const access_token  = params.get("access_token");
-    const refresh_token = params.get("refresh_token");
-    if (access_token) {
-      document.cookie = `sb-access-token=${access_token}; path=/; samesite=lax`;
-      document.cookie = `sb-refresh-token=${refresh_token ?? ""}; path=/; samesite=lax`;
-    }
-    window.location.href = "/auth/update-password";
-  } else {
-    window.location.href = "/";
-  }
-</script>
+      if (type === "signup") {
+        window.location.href = "/?confirmed=1";
+      } else if (type === "recovery") {
+        const access_token  = params.get("access_token");
+        const refresh_token = params.get("refresh_token");
+        if (access_token) {
+          document.cookie = `sb-access-token=${access_token}; path=/; samesite=lax`;
+          document.cookie = `sb-refresh-token=${refresh_token ?? ""}; path=/; samesite=lax`;
+        }
+        window.location.href = "/auth/update-password";
+      } else {
+        window.location.href = "/";
+      }
+    </script>
+  </body>
+</html>
