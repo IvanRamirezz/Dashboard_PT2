@@ -11,20 +11,16 @@ export async function POST({ request, redirect }: APIContext) {
     const formData = await request.formData();
 
     data = {
-
-      nombre: formData.get("nombre"),
+      nombre:          formData.get("nombre"),
       apellidoPaterno: formData.get("apellidoPaterno"),
       apellidoMaterno: formData.get("apellidoMaterno"),
-
-      email: formData.get("email"),
-      password: formData.get("password"),
+      email:           formData.get("email"),
+      password:        formData.get("password"),
       passwordConfirm: formData.get("passwordConfirm"),
-
-      role: formData.get("role"),
-
-      boleta: formData.get("boleta"),
-      matricula: formData.get("matricula"),
-
+      role:            formData.get("role"),
+      boleta:          formData.get("boleta"),
+      matricula:       formData.get("matricula"),
+      baseUrl:         new URL(request.url).origin,  // ← agregar
     };
 
 

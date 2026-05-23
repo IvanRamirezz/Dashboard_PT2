@@ -1,5 +1,5 @@
 ---
-// src/pages/auth/signin.astro
+// src/pages/index.astro
 import AuthLayout from "../presentation/layouts/AuthLayout.astro";
 import InputField from "../presentation/components/ui/InputField.astro";
 import PasswordField from "../presentation/components/ui/PasswordField.astro";
@@ -10,7 +10,8 @@ import { getUserRole } from "../business/auth/userRoleService";
 
 const { url, redirect, cookies } = Astro;
 
-const error = url.searchParams.get("error");
+const error     = url.searchParams.get("error");
+const confirmed = url.searchParams.get("confirmed");
 
 const user = await getValidatedSession(cookies);
 
@@ -30,6 +31,10 @@ if (user) {
   <p class="subtitle">Ingresa con tus credenciales para acceder a la plataforma.</p>
 
   <form action="/api/auth/signin" method="post">
+
+    {confirmed && (
+      <Alert type="success" message="Correo confirmado correctamente. Ya puedes iniciar sesión." />
+    )}
 
     {error === "credenciales" && (
       <Alert type="error" message="Credenciales incorrectas" />

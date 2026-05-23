@@ -2,6 +2,7 @@
 // src/pages/dashboard/admin/alumnos.astro
 import DashboardLayout from "../../../presentation/layouts/DashboardLayout.astro";
 import UserEditor from "../../../presentation/components/admin/UserEditor.astro";
+import Toast from "../../../presentation/components/ui/Toast.astro";
 import { getValidatedSession } from "../../../business/auth/sessionService";
 import { getUserRole } from "../../../business/auth/userRoleService";
 import { getStudentByBoleta } from "../../../business/admin/studentService";
@@ -12,8 +13,9 @@ if (!user) return Astro.redirect("/");
 const roleData = await getUserRole(user.id);
 if (roleData?.role !== "admin") return Astro.redirect("/");
 
-const boleta  = Astro.url.searchParams.get("boleta") ?? undefined;
-const updated = Astro.url.searchParams.get("updated") ?? undefined;
+const boleta  = Astro.url.searchParams.get("boleta")  ?? undefined;
+const updated = Astro.url.searchParams.get("updated")  ?? undefined;
+const deleted = Astro.url.searchParams.get("deleted")  ?? undefined;
 
 const student = boleta ? await getStudentByBoleta(boleta) : null;
 ---
@@ -25,7 +27,7 @@ const student = boleta ? await getStudentByBoleta(boleta) : null;
 >
   <UserEditor
     title="Gestión de alumno"
-    description="Gestiona la información de los alumnos registrados. Busca por matrícula, actualiza sus datos o da de baja su registro en el sistema."
+    description="Gestiona la información de los alumnos registrados. Busca por boleta, actualiza sus datos o da de baja su registro en el sistema."
     searchName="boleta"
     searchLabel="Número de boleta"
     idField="alumno_id"
@@ -36,4 +38,8 @@ const student = boleta ? await getStudentByBoleta(boleta) : null;
     user={student}
     updated={updated}
   />
+
+  {deleted && (
+    <Toast message="Alumno dado de baja correctamente." type="warning" />
+  )}
 </DashboardLayout>

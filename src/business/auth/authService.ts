@@ -1,16 +1,19 @@
+// src/business/auth/authService.ts
 import { supabaseAdmin } from "../../data/client/supabaseAdmin";
-import { createSupabaseServerClient } from "../../data/client/supabase";
-
-const supabase = createSupabaseServerClient();
-
+import { createClient } from "@supabase/supabase-js";
 import {
   createUsuario,
   createAlumno,
   createProfesor
 } from "../../data/repositories/userRepository";
 
-export async function registerUser(data: any) {
+const supabasePublic = createClient(
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
+  { auth: { autoRefreshToken: false, persistSession: false } }
+);
 
+export async function registerUser(data: any) {
   const {
     email,
     password,
@@ -20,30 +23,26 @@ export async function registerUser(data: any) {
     role,
     boleta,
     matricula,
+    baseUrl,
   } = data;
 
   await ensureUniqueSubtypeData(role, boleta, matricula);
 
-  let authUid: string | null = null;
+  let authUid:   string | null = null;
   let usuarioId: number | null = null;
 
   try {
+    // 1 — signUp envía correo, pero con SMTP+confirmación devuelve user: null
+    const { error: signUpError } = await supabasePublic.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${baseUrl}/auth/confirm`,
+      },
+    });
 
-    /*
-    1 crear usuario en auth (ENVÍA CORREO AUTOMÁTICO)
-    */
-    const { data: authData, error: authError } =
-      await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: "http://localhost:4321/auth/callback"
-        }
-      });
-
-    if (authError) {
-      const message = authError.message.toLowerCase();
-
+    if (signUpError) {
+      const message = signUpError.message.toLowerCase();
       if (
         message.includes("already") ||
         message.includes("exists") ||
@@ -52,20 +51,21 @@ export async function registerUser(data: any) {
       ) {
         throw new Error("EMAIL_EXISTS");
       }
-
-      throw new Error(authError.message);
+      throw new Error(signUpError.message);
     }
 
-    // ⚠️ Validación importante
-    if (!authData.user) {
-      throw new Error("AUTH_UID_MISSING");
-    }
+    // 2 — obtener el uid real via admin (signUp con confirmación devuelve user: null)
+    const { data: adminData, error: adminError } =
+      await supabaseAdmin.auth.admin.listUsers();
 
-    authUid = authData.user.id;
+    if (adminError) throw new Error(adminError.message);
 
-    /*
-    2 crear usuario en tabla usuarios
-    */
+    const authUser = adminData.users.find((u) => u.email === email);
+    if (!authUser) throw new Error("AUTH_UID_MISSING");
+
+    authUid = authUser.id;
+
+    // 3 — crear registro en tabla usuarios
     const usuario = await createUsuario(
       authUid,
       nombre,
@@ -75,21 +75,13 @@ export async function registerUser(data: any) {
 
     usuarioId = usuario.usuario_id;
 
-    /*
-    3 crear subtipo
-    */
-    if (role === "student") {
-      await createAlumno(usuario.usuario_id, boleta);
-    }
+    // 4 — crear subtipo según rol
+    if (role === "student") await createAlumno(usuario.usuario_id, boleta);
+    if (role === "teacher") await createProfesor(usuario.usuario_id, matricula);
 
-    if (role === "teacher") {
-      await createProfesor(usuario.usuario_id, matricula);
-    }
-
-    return authData.user;
+    return authUser;
 
   } catch (error: any) {
-
     await rollbackFailedRegistration(authUid, usuarioId);
 
     const message = error.message?.toLowerCase?.() || "";
@@ -102,17 +94,12 @@ export async function registerUser(data: any) {
       throw new Error("DATA_EXISTS");
     }
 
-    if (error.message === "AUTH_UID_MISSING") {
-      throw new Error("UNKNOWN_ERROR");
-    }
+    if (error.message === "AUTH_UID_MISSING") throw new Error("UNKNOWN_ERROR");
 
     throw error;
   }
 }
 
-/*
-VALIDACIONES DE DUPLICADOS
-*/
 async function ensureUniqueSubtypeData(
   role: string,
   boleta?: string,
@@ -124,10 +111,7 @@ async function ensureUniqueSubtypeData(
       .select("alumno_id")
       .eq("boleta", boleta)
       .maybeSingle();
-
-    if (data) {
-      throw new Error("DATA_EXISTS");
-    }
+    if (data) throw new Error("DATA_EXISTS");
   }
 
   if (role === "teacher" && matricula) {
@@ -136,18 +120,12 @@ async function ensureUniqueSubtypeData(
       .select("profesor_id")
       .eq("matricula_trabajador", matricula)
       .maybeSingle();
-
-    if (data) {
-      throw new Error("DATA_EXISTS");
-    }
+    if (data) throw new Error("DATA_EXISTS");
   }
 }
 
-/*
-ROLLBACK SI FALLA TODO
-*/
 async function rollbackFailedRegistration(
-  authUid: string | null,
+  authUid:   string | null,
   usuarioId: number | null,
 ) {
   if (usuarioId) {

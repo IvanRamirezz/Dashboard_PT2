@@ -170,25 +170,22 @@ export async function updateTeacherStatus(
 
 }
 
+// reemplaza las funciones delete
 
-
-/* =====================
-ELIMINAR PROFESOR
-(borra tambien usuarios por cascade)
-===================== */
-
-export async function deleteTeacher(
-
-  profesor_id:number
-
-){
-
+export async function deleteTeacherById(profesor_id: number) {
   const { error } = await supabaseAdmin
-  .from("usuarios")
-  .delete()
-  .eq("usuario_id", profesor_id);
+    .from("usuarios")
+    .delete()
+    .eq("usuario_id", profesor_id);
 
+  if (error) throw new Error(error.message);
+}
 
-  if(error) throw new Error(error.message);
+export async function deleteStudentById(alumno_id: number) {
+  const { error } = await supabaseAdmin
+    .from("usuarios")
+    .delete()
+    .eq("usuario_id", alumno_id);
 
+  if (error) throw new Error(error.message);
 }

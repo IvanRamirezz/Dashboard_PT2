@@ -1,7 +1,6 @@
-import { createSupabaseServerClient } from "../../data/client/supabase";
+import { supabaseAdmin as supabase } from "../../data/client/supabaseAdmin";
 
 export async function getPractices(){
-  const supabase = createSupabaseServerClient();
 
   const { data, error } = await supabase
     .from("practicas")

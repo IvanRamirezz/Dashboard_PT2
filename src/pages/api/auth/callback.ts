@@ -1,29 +1,32 @@
+// src/pages/api/auth/callback.ts
 import type { APIRoute } from "astro";
 import { createSupabaseServerClient } from "../../../data/client/supabase";
-import { getSessionCookieOptions } from "../../../business/auth/sessionCookies";
 
-export const GET: APIRoute = async ({ url, cookies, redirect }) => {
-  const supabase = createSupabaseServerClient();
+export const GET: APIRoute = async ({ request }) => {
+  const url      = new URL(request.url);
   const authCode = url.searchParams.get("code");
+  const next     = url.searchParams.get("next") ?? "/";
 
   if (!authCode) {
-    return new Response("No se proporcionó ningún código", { status: 400 });
+    return new Response(null, {
+      status: 302,
+      headers: { location: "/auth/forgot-password?error=link_invalido" },
+    });
   }
 
-  const { data, error } = await supabase.auth.exchangeCodeForSession(authCode);
+  const responseHeaders = new Headers();
+  const supabase = createSupabaseServerClient(request.headers, responseHeaders);
+
+  const { error } = await supabase.auth.exchangeCodeForSession(authCode);
 
   if (error) {
-    return new Response(error.message, { status: 500 });
+    // no exponer el mensaje interno — redirigir con error genérico
+    const isExpired = error.message.toLowerCase().includes("expired");
+    const param     = isExpired ? "error=link_expirado" : "error=link_invalido";
+    responseHeaders.set("location", `/auth/forgot-password?${param}`);
+    return new Response(null, { status: 302, headers: responseHeaders });
   }
 
-  const { access_token, refresh_token } = data.session;
-
-  cookies.set("sb-access-token", access_token, {
-    ...getSessionCookieOptions(),
-  });
-  cookies.set("sb-refresh-token", refresh_token, {
-    ...getSessionCookieOptions(),
-  });
-
-  return redirect("/dashboard");
+  responseHeaders.set("location", next);
+  return new Response(null, { status: 302, headers: responseHeaders });
 };

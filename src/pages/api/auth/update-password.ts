@@ -1,35 +1,41 @@
+// src/pages/api/auth/update-password.ts
 import type { APIRoute } from "astro";
-import { supabaseAdmin } from "../../../data/client/supabaseAdmin";
+import { createSupabaseServerClient } from "../../../data/client/supabase";
 import { clearSessionCookies } from "../../../business/auth/sessionCookies";
 
-export const POST: APIRoute = async ({ request, redirect, cookies }) => {
-  const formData = await request.formData();
-  const password = formData.get("password")?.toString();
-  const accessToken = cookies.get("sb-access-token")?.value;
-  console.log("access_token:", cookies.get("sb-access-token")?.value ? "OK" : "MISSING");
+const MIN_PASSWORD_LENGTH = 8;
 
-  if (!password || !accessToken) {
-    return redirect("/auth/update-password?error=1");
+export const POST: APIRoute = async ({ request, cookies }) => {
+  const formData        = await request.formData();
+  const password        = formData.get("password")?.toString();
+  const passwordConfirm = formData.get("passwordConfirm")?.toString();
+
+  const responseHeaders = new Headers();
+
+  if (!password || password.length < MIN_PASSWORD_LENGTH) {
+    responseHeaders.set("location", "/auth/update-password?error=password_corto");
+    return new Response(null, { status: 302, headers: responseHeaders });
   }
 
-  // Extraer el user id del JWT
-  const payload = JSON.parse(atob(accessToken.split(".")[1]));
-  const userId = payload.sub;
-
-  if (!userId) {
-    return redirect("/auth/update-password?error=1");
+  if (password !== passwordConfirm) {
+    responseHeaders.set("location", "/auth/update-password?error=no_coinciden");
+    return new Response(null, { status: 302, headers: responseHeaders });
   }
 
-  // Actualizar contraseña directo con admin, sin necesitar el refresh token
-  const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, {
-    password,
-  });
+  const supabase = createSupabaseServerClient(request.headers, responseHeaders);
+  const { error } = await supabase.auth.updateUser({ password });
 
   if (error) {
-    return redirect("/auth/update-password?error=1");
+    // Supabase devuelve code "same_password" cuando es igual a la actual
+    const location = error.code === "same_password"
+      ? "/auth/update-password?error=misma_contrasena"
+      : "/auth/update-password?error=error_actualizacion";
+
+    responseHeaders.set("location", location);
+    return new Response(null, { status: 302, headers: responseHeaders });
   }
 
   clearSessionCookies(cookies);
-
-  return redirect("/auth/update-password?success=1");
+  responseHeaders.set("location", "/auth/update-password?success=1");
+  return new Response(null, { status: 302, headers: responseHeaders });
 };

@@ -2,6 +2,7 @@
 // src/pages/dashboard/admin/profesores.astro
 import DashboardLayout from "../../../presentation/layouts/DashboardLayout.astro";
 import UserEditor from "../../../presentation/components/admin/UserEditor.astro";
+import Toast from "../../../presentation/components/ui/Toast.astro";
 import { getValidatedSession } from "../../../business/auth/sessionService";
 import { getUserRole } from "../../../business/auth/userRoleService";
 import { getTeacherByMatricula } from "../../../business/admin/teacherService";
@@ -14,6 +15,7 @@ if (roleData?.role !== "admin") return Astro.redirect("/");
 
 const matricula = Astro.url.searchParams.get("matricula") ?? undefined;
 const updated   = Astro.url.searchParams.get("updated")   ?? undefined;
+const deleted   = Astro.url.searchParams.get("deleted")   ?? undefined;
 
 const teacher = matricula ? await getTeacherByMatricula(matricula) : null;
 ---
@@ -36,4 +38,8 @@ const teacher = matricula ? await getTeacherByMatricula(matricula) : null;
     user={teacher}
     updated={updated}
   />
+
+  {deleted && (
+    <Toast message="Profesor dado de baja correctamente." type="warning" />
+  )}
 </DashboardLayout>

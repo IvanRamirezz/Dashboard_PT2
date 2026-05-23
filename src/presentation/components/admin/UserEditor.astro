@@ -1,6 +1,7 @@
 ---
+// src/presentation/components/admin/UserEditor.astro
 import ConfirmDeleteModal from "../ui/modals/ConfirmDeleteModal.astro";
-import SuccessModal from "../ui/modals/SuccessModal.astro";
+import Toast from "../ui/Toast.astro";
 
 interface Props {
   title: string
@@ -30,10 +31,6 @@ const {
   updated
 } = Astro.props;
 
-/*
-normalizar el ID del usuario una sola vez
-evita user?.[idField] ?? user?.usuarios?.[idField] duplicado
-*/
 const userId = user?.[idField] ?? user?.usuarios?.[idField];
 ---
 
@@ -55,7 +52,6 @@ const userId = user?.[idField] ?? user?.usuarios?.[idField];
     <form method="POST" action={updateAction}>
 
       <input type="hidden" name={idField} value={userId} />
-
       <input
         type="hidden"
         name="redirect"
@@ -102,12 +98,12 @@ const userId = user?.[idField] ?? user?.usuarios?.[idField];
 
 </div>
 
-<SuccessModal
-  id="successModal"
-  show={!!updated}
-  title="Cambios guardados"
-  message="La información se actualizó correctamente."
-/>
+{updated && (
+  <Toast
+    message="La información se actualizó correctamente."
+    type="success"
+  />
+)}
 
 <ConfirmDeleteModal
   id="deleteModal"
@@ -117,8 +113,8 @@ const userId = user?.[idField] ?? user?.usuarios?.[idField];
   message="¿Seguro que deseas eliminar este registro?"
 />
 
-<script type="module">
-  import { openModal, closeModal } from "../../../src/script/modal";
+<script>
+  import { openModal, closeModal } from "../../scripts/modal";
   window.openModal = openModal;
   window.closeModal = closeModal;
 </script>

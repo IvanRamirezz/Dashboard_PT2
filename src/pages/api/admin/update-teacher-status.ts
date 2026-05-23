@@ -1,57 +1,33 @@
+// src/pages/api/admin/update-teacher-status.ts
 import type { APIContext } from "astro";
-import { supabaseAdmin } from "../../../data/client/supabaseAdmin";
 import { getValidatedSession } from "../../../business/auth/sessionService";
 import { getUserRole } from "../../../business/auth/userRoleService";
+import { updateTeacherStatus } from "../../../business/admin/adminService";
 
 export async function POST({ request, cookies }: APIContext) {
-
-  /*
-  validar sesión y rol
-  */
   const user = await getValidatedSession(cookies);
   if (!user) return new Response("No autorizado", { status: 401 });
 
   const roleData = await getUserRole(user.id);
   if (roleData?.role !== "admin") return new Response("Sin permisos", { status: 403 });
 
-  /*
-  obtener datos del form
-  */
-  const formData = await request.formData();
-
-  const profesor_id = formData.get("profesor_id");
-  const estado      = formData.get("estado");
+  const formData   = await request.formData();
+  const profesor_id = Number(formData.get("profesor_id"));
+  const estado      = formData.get("estado")?.toString();
 
   if (!profesor_id || !estado) {
     return new Response("Datos incompletos", { status: 400 });
   }
 
-  /*
-  actualizar estado del profesor
-  */
   try {
-
-    const { error } = await supabaseAdmin
-      .from("profesores")
-      .update({ estado })
-      .eq("profesor_id", profesor_id);
-
-    if (error) {
-      console.error(error);
-      return new Response("Error al actualizar", { status: 500 });
-    }
-
+    await updateTeacherStatus(profesor_id, estado as "pendiente" | "aprobado" | "rechazado");
   } catch (e) {
     console.error(e);
-    return new Response("Error inesperado", { status: 500 });
+    return new Response("Error al actualizar", { status: 500 });
   }
 
-  /*
-  redirigir al panel
-  */
   return new Response(null, {
     status: 302,
-    headers: { Location: "/dashboard/admin" }
+    headers: { Location: "/dashboard/admin" },
   });
-
 }
