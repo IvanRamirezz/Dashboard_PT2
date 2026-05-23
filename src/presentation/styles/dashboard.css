@@ -400,3 +400,39 @@ h3 {
   .logo-upiita { height: 50px; }
   .header-title { font-size: var(--font-base); }
 }
+
+/* ── Buscador admin ── */
+.search-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.search-label {
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--dark);
+}
+
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.search-row input {
+  padding: 10px var(--sp-4);
+  border-radius: var(--radius);
+  border: 1.5px solid #cdd5d1;
+  min-width: 300px;
+  font-size: var(--font-base);
+  background: white;
+  color: var(--dark);
+  transition: var(--transition);
+}
+
+.search-row input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(52,91,99,0.12);
+}

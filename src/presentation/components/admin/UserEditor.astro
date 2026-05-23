@@ -43,9 +43,13 @@ const userId = user?.[idField] ?? user?.usuarios?.[idField];
   )}
 
   <form method="GET" class="search-box">
-    <label>{searchLabel}</label>
-    <input name={searchName} value={identifierValue ?? ""} />
-    <button class="btn primary">Buscar</button>
+    <div class="search-field">
+      <label class="search-label">{searchLabel}</label>
+      <div class="search-row">
+        <input name={searchName} value={identifierValue ?? ""} />
+        <button class="btn primary">Buscar</button>
+      </div>
+    </div>
   </form>
 
   {user && (
