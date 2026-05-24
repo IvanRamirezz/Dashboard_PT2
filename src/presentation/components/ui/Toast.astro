@@ -1,19 +1,22 @@
 ---
+// src/presentation/components/ui/Toast.astro
 interface Props {
   message: string;
   type?: "success" | "error" | "info" | "warning";
-  duration?: number; // ms, default 3000
+  duration?: number;
 }
 
 const {
   message,
-  type = "success",
+  type     = "success",
   duration = 3000,
 } = Astro.props;
+
+const toastId = `toast-${Math.random().toString(36).slice(2)}`;
 ---
 
 <div
-  id="toast"
+  id={toastId}
   class={`toast toast--${type}`}
   data-duration={duration}
 >
@@ -34,7 +37,7 @@ const {
     color: #fff;
     font-size: 0.95rem;
     font-weight: 500;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
     z-index: 9999;
     opacity: 1;
     transition: opacity 0.5s ease;
@@ -45,23 +48,38 @@ const {
   .toast--info    { background-color: #3b82f6; }
   .toast--warning { background-color: #f59e0b; }
 
-  .toast.hide { opacity: 0; }
+  .toast.hide { opacity: 0; pointer-events: none; }
 </style>
 
-<script>
-  const toast = document.getElementById("toast");
+<script define:vars={{ toastId, duration }}>
+  const toast = document.getElementById(toastId);
+  if (!toast) return;
 
-  if (toast) {
-    const duration = Number(toast.dataset.duration) || 3000;
+  // apilar toasts verticalmente si hay más de uno
+  const others = document.querySelectorAll(".toast:not(#" + toastId + ")");
+  let offset = 1.5;
+  others.forEach((t) => {
+    offset += t.getBoundingClientRect().height / 16 + 0.5;
+  });
+  toast.style.bottom = offset + "rem";
 
-    setTimeout(() => toast.classList.add("hide"), duration);
+  // auto-ocultar
+  const timer = setTimeout(() => {
+    toast.classList.add("hide");
+  }, duration);
 
-    toast.addEventListener("transitionend", () => {
-      toast.remove();
+  // remover después de la transición
+  toast.addEventListener("transitionend", () => {
+    clearTimeout(timer);
+    toast.remove();
+    // limpiar query params cuando ya no queda ningún toast
+    if (document.querySelectorAll(".toast").length === 0) {
       const url = new URL(window.location.href);
       url.searchParams.delete("success");
+      url.searchParams.delete("updated");
+      url.searchParams.delete("deleted");
       url.searchParams.delete("error");
       window.history.replaceState({}, "", url);
-    });
-  }
+    }
+  });
 </script>

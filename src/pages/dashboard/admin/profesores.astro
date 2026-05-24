@@ -5,7 +5,7 @@ import UserEditor from "../../../presentation/components/admin/UserEditor.astro"
 import Toast from "../../../presentation/components/ui/Toast.astro";
 import { getValidatedSession } from "../../../business/auth/sessionService";
 import { getUserRole } from "../../../business/auth/userRoleService";
-import { getTeacherByMatricula } from "../../../business/admin/teacherService";
+import { getTeacherByMatricula } from "../../../business/admin/adminService";
 
 const user = await getValidatedSession(Astro.cookies);
 if (!user) return Astro.redirect("/");
@@ -16,6 +16,7 @@ if (roleData?.role !== "admin") return Astro.redirect("/");
 const matricula = Astro.url.searchParams.get("matricula") ?? undefined;
 const updated   = Astro.url.searchParams.get("updated")   ?? undefined;
 const deleted   = Astro.url.searchParams.get("deleted")   ?? undefined;
+const error     = Astro.url.searchParams.get("error")     ?? undefined;
 
 const teacher = matricula ? await getTeacherByMatricula(matricula) : null;
 ---
@@ -39,7 +40,7 @@ const teacher = matricula ? await getTeacherByMatricula(matricula) : null;
     updated={updated}
   />
 
-  {deleted && (
-    <Toast message="Profesor dado de baja correctamente." type="warning" />
-  )}
+  {deleted && <Toast message="Profesor dado de baja correctamente." type="warning" />}
+  {error === "campos_vacios" && <Toast message="Todos los campos son requeridos." type="error" />}
+  {error === "actualizacion" && <Toast message="Error al actualizar. Intenta de nuevo." type="error" />}
 </DashboardLayout>

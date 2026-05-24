@@ -26,14 +26,15 @@ export async function registerUser(data: any) {
     baseUrl,
   } = data;
 
-  await ensureUniqueSubtypeData(role, boleta, matricula);
+  // verificar duplicados ANTES de llamar a signUp — una sola llamada a listUsers
+  await ensureUniqueSubtypeData(role, boleta, matricula, email);
 
   let authUid:   string | null = null;
   let usuarioId: number | null = null;
 
   try {
-    // 1 — signUp envía correo, pero con SMTP+confirmación devuelve user: null
-    const { error: signUpError } = await supabasePublic.auth.signUp({
+    // 1 — signUp envía correo de confirmación automáticamente
+    const { data: signUpData, error: signUpError } = await supabasePublic.auth.signUp({
       email,
       password,
       options: {
@@ -54,16 +55,22 @@ export async function registerUser(data: any) {
       throw new Error(signUpError.message);
     }
 
-    // 2 — obtener el uid real via admin (signUp con confirmación devuelve user: null)
-    const { data: adminData, error: adminError } =
-      await supabaseAdmin.auth.admin.listUsers();
+    // 2 — obtener uid del signUp
+    // con SMTP + confirmación activa Supabase devuelve user: null
+    // en ese caso buscar por email via admin (el email ya fue validado como único arriba)
+    authUid = signUpData?.user?.id ?? signUpData?.session?.user?.id ?? null;
 
-    if (adminError) throw new Error(adminError.message);
+    if (!authUid) {
+      const { data: listData, error: listError } =
+        await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
 
-    const authUser = adminData.users.find((u) => u.email === email);
-    if (!authUser) throw new Error("AUTH_UID_MISSING");
+      if (listError) throw new Error(listError.message);
 
-    authUid = authUser.id;
+      const found = listData.users.find((u) => u.email === email);
+      if (!found) throw new Error("AUTH_UID_MISSING");
+
+      authUid = found.id;
+    }
 
     // 3 — crear registro en tabla usuarios
     const usuario = await createUsuario(
@@ -79,7 +86,7 @@ export async function registerUser(data: any) {
     if (role === "student") await createAlumno(usuario.usuario_id, boleta);
     if (role === "teacher") await createProfesor(usuario.usuario_id, matricula);
 
-    return authUser;
+    return signUpData?.user ?? { id: authUid, email };
 
   } catch (error: any) {
     await rollbackFailedRegistration(authUid, usuarioId);
@@ -104,7 +111,16 @@ async function ensureUniqueSubtypeData(
   role: string,
   boleta?: string,
   matricula?: string,
+  email?: string,
 ) {
+  if (email) {
+    const { data: listData } = await supabaseAdmin.auth.admin
+      .listUsers({ page: 1, perPage: 1000 });
+
+    const existing = listData?.users.find((u) => u.email === email);
+    if (existing) throw new Error("EMAIL_EXISTS");
+  }
+
   if (role === "student" && boleta) {
     const { data } = await supabaseAdmin
       .from("alumnos")

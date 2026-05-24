@@ -19,6 +19,10 @@ export async function POST({ request, cookies }: APIContext) {
     "/dashboard/admin/profesores"
   );
 
+  if (!profesor_id || profesor_id <= 0) {
+    return new Response("ID inválido", { status: 400 });
+  }
+
   try {
     await deleteTeacherById(profesor_id);
   } catch (e: any) {

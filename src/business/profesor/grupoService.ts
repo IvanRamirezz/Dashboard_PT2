@@ -54,15 +54,30 @@ export async function createGroup(usuarioId: number, nombre: string) {
     return { reactivated: true };
   }
 
-  if (existente?.activo) {
-    return { error: "existe" };
+  if (existente?.activo) return { error: "existe" };
+
+  // generar código único — reintentar si ya existe
+  let codigo_acceso = generarCodigo();
+  let intentos = 0;
+
+  while (intentos < 5) {
+    const { data: codigoExiste } = await supabaseAdmin
+      .from("grupos")
+      .select("grupo_id")
+      .eq("codigo_acceso", codigo_acceso)
+      .maybeSingle();
+
+    if (!codigoExiste) break;
+
+    codigo_acceso = generarCodigo();
+    intentos++;
   }
 
   const { data, error } = await supabaseAdmin
     .from("grupos")
     .insert({
       nombre,
-      codigo_acceso: generarCodigo(),
+      codigo_acceso,
       ciclo_escolar: ciclo,
       profesor_id:   usuarioId,
       activo:        true,

@@ -16,6 +16,7 @@ if (roleData?.role !== "admin") return Astro.redirect("/");
 const boleta  = Astro.url.searchParams.get("boleta")  ?? undefined;
 const updated = Astro.url.searchParams.get("updated")  ?? undefined;
 const deleted = Astro.url.searchParams.get("deleted")  ?? undefined;
+const error   = Astro.url.searchParams.get("error")    ?? undefined;
 
 const student = boleta ? await getStudentByBoleta(boleta) : null;
 ---
@@ -39,7 +40,7 @@ const student = boleta ? await getStudentByBoleta(boleta) : null;
     updated={updated}
   />
 
-  {deleted && (
-    <Toast message="Alumno dado de baja correctamente." type="warning" />
-  )}
+  {deleted && <Toast message="Alumno dado de baja correctamente." type="warning" />}
+  {error === "campos_vacios" && <Toast message="Todos los campos son requeridos." type="error" />}
+  {error === "actualizacion" && <Toast message="Error al actualizar. Intenta de nuevo." type="error" />}
 </DashboardLayout>

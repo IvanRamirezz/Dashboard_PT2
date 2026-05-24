@@ -12,12 +12,16 @@ export async function POST({ request, cookies }: APIContext) {
   const roleData = await getUserRole(user.id);
   if (roleData?.role !== "admin") return new Response("Sin permisos", { status: 403 });
 
-  const formData    = await request.formData();
-  const alumno_id   = Number(formData.get("alumno_id"));
+  const formData  = await request.formData();
+  const alumno_id = Number(formData.get("alumno_id"));
   const redirectPath = getSafeRedirectPath(
     formData.get("redirect")?.toString(),
     "/dashboard/admin/alumnos"
   );
+
+  if (!alumno_id || alumno_id <= 0) {
+    return new Response("ID inválido", { status: 400 });
+  }
 
   try {
     await deleteStudentById(alumno_id);
@@ -27,6 +31,6 @@ export async function POST({ request, cookies }: APIContext) {
   }
 
   return Response.redirect(
-  new URL("/dashboard/admin/alumnos?deleted=1", request.url), 303
+    new URL("/dashboard/admin/alumnos?deleted=1", request.url), 303
   );
 }

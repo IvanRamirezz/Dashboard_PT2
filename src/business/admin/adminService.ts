@@ -189,3 +189,33 @@ export async function deleteStudentById(alumno_id: number) {
 
   if (error) throw new Error(error.message);
 }
+
+// 
+export async function updateStudentData(
+  alumno_id: number,
+  datos: {
+    nombre: string;
+    apellido_paterno: string;
+    apellido_materno: string;
+    boleta: string;
+  }
+) {
+  const [{ error: userError }, { error: studentError }] = await Promise.all([
+    supabaseAdmin
+      .from("usuarios")
+      .update({
+        nombre:           datos.nombre,
+        apellido_paterno: datos.apellido_paterno,
+        apellido_materno: datos.apellido_materno,
+      })
+      .eq("usuario_id", alumno_id),
+
+    supabaseAdmin
+      .from("alumnos")
+      .update({ boleta: datos.boleta })
+      .eq("alumno_id", alumno_id),
+  ]);
+
+  if (userError) throw new Error(userError.message);
+  if (studentError) throw new Error(studentError.message);
+}
