@@ -1,6 +1,13 @@
-import { supabaseAdmin } from "../../data/client/supabaseAdmin";
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// src/business/profesor/grupoService.ts
+import {
+  findGroupsByTeacher,
+  findGroupByName,
+  findGroupByCode,
+  findGroupByIdAndTeacher,
+  insertGroup,
+  updateGroupActivo,
+  countGroupsByTeacher,
+} from "../../data/repositories/grupoRepository";
 
 function generarCodigo(longitud = 5): string {
   const caracteres = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -11,100 +18,57 @@ function generarCodigo(longitud = 5): string {
   return codigo;
 }
 
-// Extraída del inline de createGroup; función pura y testeable
 function calcularCicloEscolar(): string {
-  const now    = new Date();
-  const year   = now.getFullYear();
-  const periodo = now.getMonth() < 6 ? "2" : "1"; // <6 = semestre par
+  const now     = new Date();
+  const year    = now.getFullYear();
+  const periodo = now.getMonth() < 6 ? "2" : "1";
   return `${year}-${periodo}`;
 }
 
-// ─── Queries ─────────────────────────────────────────────────────────────────
-
 export async function getGroupsByTeacher(usuarioId: number) {
-  const { data, error } = await supabaseAdmin
-    .from("grupos")
-    .select("grupo_id, nombre, codigo_acceso, ciclo_escolar")
-    .eq("profesor_id", usuarioId)
-    .eq("activo", true)
-    .order("nombre");
-
-  if (error) throw error;
-  return data ?? [];
+  return findGroupsByTeacher(usuarioId);
 }
 
 export async function createGroup(usuarioId: number, nombre: string) {
-  const ciclo = calcularCicloEscolar();
-
-  const { data: existente } = await supabaseAdmin
-    .from("grupos")
-    .select("grupo_id, activo")
-    .eq("profesor_id",   usuarioId)
-    .eq("nombre",        nombre)
-    .eq("ciclo_escolar", ciclo)
-    .maybeSingle();
+  const ciclo     = calcularCicloEscolar();
+  const existente = await findGroupByName(usuarioId, nombre, ciclo);
 
   if (existente && !existente.activo) {
-    const { error } = await supabaseAdmin
-      .from("grupos")
-      .update({ activo: true })
-      .eq("grupo_id", existente.grupo_id);
-
-    if (error) throw error;
+    await updateGroupActivo(existente.grupo_id, true);
     return { reactivated: true };
   }
 
   if (existente?.activo) return { error: "existe" };
 
-  // generar código único — reintentar si ya existe
+  // generar código único con reintentos
   let codigo_acceso = generarCodigo();
   let intentos = 0;
 
   while (intentos < 5) {
-    const { data: codigoExiste } = await supabaseAdmin
-      .from("grupos")
-      .select("grupo_id")
-      .eq("codigo_acceso", codigo_acceso)
-      .maybeSingle();
-
-    if (!codigoExiste) break;
-
+    const existe = await findGroupByCode(codigo_acceso);
+    if (!existe) break;
     codigo_acceso = generarCodigo();
     intentos++;
   }
 
-  const { data, error } = await supabaseAdmin
-    .from("grupos")
-    .insert({
-      nombre,
-      codigo_acceso,
-      ciclo_escolar: ciclo,
-      profesor_id:   usuarioId,
-      activo:        true,
-    })
-    .select()
-    .single();
+  const data = await insertGroup({
+    nombre,
+    codigo_acceso,
+    ciclo_escolar: ciclo,
+    profesor_id:   usuarioId,
+  });
 
-  if (error) throw error;
   return { data };
 }
 
 export async function deactivateGroupByName(usuarioId: number, nombre: string) {
-  const { data: grupo } = await supabaseAdmin
-    .from("grupos")
-    .select("grupo_id")
-    .eq("profesor_id", usuarioId)
-    .eq("nombre",      nombre)
-    .eq("activo",      true)
-    .maybeSingle();
+  const ciclo = calcularCicloEscolar();
+  const grupo = await findGroupByName(usuarioId, nombre, ciclo);
 
-  if (!grupo) return { error: "no_existe" };
+  if (!grupo || !grupo.activo) return { error: "no_existe" };
 
-  const { error } = await supabaseAdmin
-    .from("grupos")
-    .update({ activo: false })
-    .eq("grupo_id", grupo.grupo_id);
-
-  if (error) throw error;
+  await updateGroupActivo(grupo.grupo_id, false);
   return { success: true };
 }
+
+export { countGroupsByTeacher, findGroupsByTeacher, findGroupByIdAndTeacher };

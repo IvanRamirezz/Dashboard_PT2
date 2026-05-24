@@ -1,6 +1,10 @@
+// src/business/profesor/alumnoService.ts
+import { findGroupByIdAndTeacher } from "../../data/repositories/grupoRepository";
+import { findAlumnosByGrupo } from "../../data/repositories/alumnoRepository";
+import { findResultadosByAlumnos } from "../../data/repositories/resultadoRepository";
+import { findPracticasByIds } from "../../data/repositories/practicaRepository";
 import { supabaseAdmin } from "../../data/client/supabaseAdmin";
 
-// Tipado explícito elimina el any[] y sirve de documentación implícita
 interface ResultadoAlumno {
   alumno_id:       number;
   nombre:          string;
@@ -16,47 +20,27 @@ export async function getStudentsByTeacher(
   grupoId:    number,
 ): Promise<ResultadoAlumno[]> {
 
-  const grupoValido = await verificarGrupo(profesorId, grupoId);
-  if (!grupoValido) return [];
+  const grupo = await findGroupByIdAndTeacher(grupoId, profesorId);
+  if (!grupo) return [];
 
-  const alumnos = await fetchAlumnos(grupoId);
+  const alumnos = await findAlumnosByGrupo(grupoId);
   if (!alumnos.length) return [];
 
-  const alumnoIds = alumnos.map(a => a.alumno_id);
+  const alumnoIds = alumnos.map((a) => a.alumno_id);
 
   const [usuarios, resultados] = await Promise.all([
     fetchUsuarios(alumnoIds),
-    fetchResultados(alumnoIds),
+    findResultadosByAlumnos(alumnoIds),
   ]);
 
-  const practicaIds = resultados.map(r => r.practica_id);
-  const practicas   = await fetchPracticas(practicaIds);
+  const practicaIds = resultados.map((r) => r.practica_id);
+  const practicas   = await findPracticasByIds(practicaIds);
 
   return construirLista(alumnos, usuarios, resultados, practicas);
 }
 
-// ─── Queries individuales (SRP: cada función hace exactamente una consulta) ──
-
-async function verificarGrupo(profesorId: number, grupoId: number) {
-  const { data } = await supabaseAdmin
-    .from("grupos")
-    .select("grupo_id")
-    .eq("grupo_id",    grupoId)
-    .eq("profesor_id", profesorId)
-    .single();
-  return !!data;
-}
-
-async function fetchAlumnos(grupoId: number) {
-  const { data, error } = await supabaseAdmin
-    .from("alumnos")
-    .select("alumno_id, boleta")
-    .eq("grupo_id", grupoId);
-
-  if (error) throw error;
-  return data ?? [];
-}
-
+// fetchUsuarios permanece aquí porque consulta usuarios — pertenece a userRepository
+// pero para evitar dependencia circular lo mantenemos como helper local
 async function fetchUsuarios(alumnoIds: number[]) {
   const { data } = await supabaseAdmin
     .from("usuarios")
@@ -65,43 +49,32 @@ async function fetchUsuarios(alumnoIds: number[]) {
   return data ?? [];
 }
 
-async function fetchResultados(alumnoIds: number[]) {
-  const { data } = await supabaseAdmin
-    .from("resultados")
-    .select("alumno_id, practica_id, calificacion, respuestas_json")
-    .in("alumno_id", alumnoIds);
-  return data ?? [];
-}
-
-async function fetchPracticas(practicaIds: number[]) {
-  const { data } = await supabaseAdmin
-    .from("practicas")
-    .select("practica_id, titulo")
-    .in("practica_id", practicaIds);
-  return data ?? [];
-}
-
-// ─── Construcción del resultado en memoria ───────────────────────────────────
-
-function construirNombre(usuario?: { nombre: string; apellido_paterno: string; apellido_materno: string }) {
+function construirNombre(usuario?: {
+  nombre: string;
+  apellido_paterno: string;
+  apellido_materno: string;
+}) {
   if (!usuario) return "Sin nombre";
   return `${usuario.nombre} ${usuario.apellido_paterno} ${usuario.apellido_materno}`;
 }
 
-function construirLista(alumnos: any[], usuarios: any[], resultados: any[], practicas: any[]): ResultadoAlumno[] {
+function construirLista(
+  alumnos:   any[],
+  usuarios:  any[],
+  resultados: any[],
+  practicas: any[]
+): ResultadoAlumno[] {
   const lista: ResultadoAlumno[] = [];
 
   for (const alumno of alumnos) {
-    const usuario = usuarios.find(u => u.usuario_id === alumno.alumno_id);
-    const nombre = construirNombre(usuario);
-    const resultadosAlumno = resultados.filter(r => r.alumno_id === alumno.alumno_id);
+    const usuario          = usuarios.find((u) => u.usuario_id === alumno.alumno_id);
+    const nombre           = construirNombre(usuario);
+    const resultadosAlumno = resultados.filter((r) => r.alumno_id === alumno.alumno_id);
 
-    if (resultadosAlumno.length === 0) {
-      continue;
-    }
+    if (!resultadosAlumno.length) continue;
 
     for (const r of resultadosAlumno) {
-      const practica = practicas.find(p => p.practica_id === r.practica_id);
+      const practica = practicas.find((p) => p.practica_id === r.practica_id);
       lista.push({
         alumno_id:       alumno.alumno_id,
         nombre,

@@ -3,15 +3,20 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
+  "dev": "astro dev",
+  "build": "astro build",
+  "preview": "astro preview",
+  "astro": "astro",
+  "test": "vitest run",
+  "test:watch": "vitest"
   },
   "dependencies": {
     "@astrojs/vercel": "^10.0.4",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.99.0",
     "astro": "^6.1.8"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.4"
   }
 }

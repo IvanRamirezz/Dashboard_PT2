@@ -1,7 +1,10 @@
+// src/pages/api/profesor/calificar.ts
 import type { APIRoute } from "astro";
-import { supabaseAdmin } from "../../../data/client/supabaseAdmin";
 import { getValidatedSession } from "../../../business/auth/sessionService";
 import { getUserRole } from "../../../business/auth/userRoleService";
+import { findAlumnoGrupo } from "../../../data/repositories/alumnoRepository";
+import { findGroupByIdAndTeacher } from "../../../data/repositories/grupoRepository";
+import { findResultado, updateResultado } from "../../../data/repositories/resultadoRepository";
 
 interface CalificacionBody {
   alumno_id:       number;
@@ -10,7 +13,6 @@ interface CalificacionBody {
   respuestas_json: Record<string, unknown>;
 }
 
-// Función pura y testeable; el endpoint queda limpio de lógica de validación
 function parseBody(body: unknown): CalificacionBody | null {
   if (!body || typeof body !== "object") return null;
 
@@ -28,7 +30,12 @@ function parseBody(body: unknown): CalificacionBody | null {
     return null;
   }
 
-  return { alumno_id: Number(alumno_id), practica_id: Number(practica_id), calificacion, respuestas_json: (respuestas_json ?? {}) as Record<string, unknown> };
+  return {
+    alumno_id:       Number(alumno_id),
+    practica_id:     Number(practica_id),
+    calificacion,
+    respuestas_json: (respuestas_json ?? {}) as Record<string, unknown>,
+  };
 }
 
 function jsonResponse(data: unknown, status: number) {
@@ -41,9 +48,7 @@ function jsonResponse(data: unknown, status: number) {
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     const user = await getValidatedSession(cookies);
-    if (!user) {
-      return jsonResponse({ error: "No autorizado" }, 401);
-    }
+    if (!user) return jsonResponse({ error: "No autorizado" }, 401);
 
     const roleData = await getUserRole(user.id);
     if (roleData?.role !== "profesor" || roleData.estado !== "aprobado") {
@@ -53,27 +58,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const body    = await request.json();
     const payload = parseBody(body);
 
-    if (!payload) {
-      return jsonResponse({ error: "Datos inválidos o incompletos" }, 400);
-    }
+    if (!payload) return jsonResponse({ error: "Datos inválidos o incompletos" }, 400);
 
     const { alumno_id, practica_id, calificacion, respuestas_json } = payload;
+
     const ownsResult = await teacherOwnsResult(roleData.usuarioId, alumno_id, practica_id);
+    if (!ownsResult) return jsonResponse({ error: "Sin permisos para calificar este registro" }, 403);
 
-    if (!ownsResult) {
-      return jsonResponse({ error: "Sin permisos para calificar este registro" }, 403);
-    }
-
-    const { data, error } = await supabaseAdmin
-      .from("resultados")
-      .update({ calificacion, respuestas_json })
-      .eq("alumno_id",   alumno_id)
-      .eq("practica_id", practica_id)
-      .select();
-
-    if (error) {
-      return jsonResponse({ error: error.message }, 500);
-    }
+    const data = await updateResultado(alumno_id, practica_id, calificacion, respuestas_json);
 
     if (!data || data.length === 0) {
       return jsonResponse({ error: "No se encontró el registro a actualizar" }, 404);
@@ -88,39 +80,16 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
 async function teacherOwnsResult(
   profesorId: number,
-  alumnoId: number,
+  alumnoId:   number,
   practicaId: number,
 ) {
-  const { data: alumno, error: alumnoError } = await supabaseAdmin
-    .from("alumnos")
-    .select("grupo_id")
-    .eq("alumno_id", alumnoId)
-    .single();
+  const alumno = await findAlumnoGrupo(alumnoId);
+  if (!alumno?.grupo_id) return false;
 
-  if (alumnoError || !alumno?.grupo_id) {
-    return false;
-  }
-
-  const [{ data: grupo, error: grupoError }, { data: resultado, error: resultadoError }] =
-    await Promise.all([
-      supabaseAdmin
-        .from("grupos")
-        .select("grupo_id")
-        .eq("grupo_id", alumno.grupo_id)
-        .eq("profesor_id", profesorId)
-        .eq("activo", true)
-        .single(),
-      supabaseAdmin
-        .from("resultados")
-        .select("alumno_id, practica_id")
-        .eq("alumno_id", alumnoId)
-        .eq("practica_id", practicaId)
-        .single(),
-    ]);
-
-  if (grupoError || resultadoError) {
-    return false;
-  }
+  const [grupo, resultado] = await Promise.all([
+    findGroupByIdAndTeacher(alumno.grupo_id, profesorId),
+    findResultado(alumnoId, practicaId),
+  ]);
 
   return !!grupo && !!resultado;
 }
