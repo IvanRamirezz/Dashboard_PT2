@@ -3,64 +3,36 @@ import DashboardLayout from "../../../presentation/layouts/DashboardLayout.astro
 import TeacherSection from "../../../presentation/components/profesor/TeacherSection.astro";
 import Toast from "../../../presentation/components/ui/Toast.astro";
 
-import { requireProfesor } from "../../../business/auth/requireProfesor";
-import {
-  getAssignmentFormData,
-  assignPracticeToGroup
-} from "../../../business/profesor/asignacionService";
+import { getAssignmentFormData } from "../../../business/profesor/asignacionService";
 
 import "../../../presentation/styles/profesor.css";
 
-/* validar sesión + rol */
-const auth = await requireProfesor(Astro.cookies);
-if ("redirect" in auth) return Astro.redirect(auth.redirect);
-const { user, roleData } = auth;
+const { user, roleData } = Astro.locals;
 
-/* POST */
-if (Astro.request.method === "POST") {
-  const data = await Astro.request.formData();
+const { practicas, grupos } = await getAssignmentFormData(roleData.usuarioId);
 
-  const practicaId = Number(data.get("practica_id"));
-  const grupoId    = Number(data.get("grupo_id"));
-
-  if (practicaId && grupoId) {
-    await assignPracticeToGroup(roleData.usuarioId, practicaId, grupoId);
-    return Astro.redirect("/dashboard/profesor/asignar?success=asignacion");
-  }
-
-  return Astro.redirect("/dashboard/profesor/asignar");
-}
-
-/* cargar datos del formulario */
-const { practicas, grupos } =
-  await getAssignmentFormData(roleData.usuarioId);
-
-/* toast */
 const toastMap: Record<string, { message: string; type: "success" | "error" | "warning" | "info" }> = {
   asignacion: { message: "Práctica asignada exitosamente", type: "success" },
+  error:      { message: "Error al asignar la práctica. Intenta de nuevo.", type: "error" },
 };
 
-const successKey = Astro.url.searchParams.get("success") ?? "";
-const toast      = toastMap[successKey];
+const successKey = Astro.url.searchParams.get("success") ?? Astro.url.searchParams.get("error") ? "error" : "";
+const toast      = toastMap[Astro.url.searchParams.get("success") ?? ""] 
+                ?? (Astro.url.searchParams.get("error") ? toastMap["error"] : undefined);
+
+const hoy = new Date().toISOString().split("T")[0];
 ---
 
-<DashboardLayout
-  title="Asignar práctica"
-  role="profesor"
-  userEmail={user.email}
->
+<DashboardLayout title="Asignar práctica" role="profesor" userEmail={user.email}>
 
-  <TeacherSection 
+  <TeacherSection
     title="Asignar práctica"
-    description="Asigna prácticas a tus grupos para que los alumnos puedan realizarlas en el entorno de FiberLab VR. Selecciona una práctica y el grupo correspondiente."
+    description="Asigna prácticas a tus grupos para que los alumnos puedan realizarlas en el entorno de FiberLab VR."
   >
 
-    <form method="POST" class="teacher-form-box">
+    <form method="POST" action="/api/profesor/asignar" class="teacher-form-box">
 
-      <label class="teacher-label">
-        Selecciona la práctica a realizar
-      </label>
-      
+      <label class="teacher-label">Selecciona la práctica a realizar</label>
       <select name="practica_id" class="teacher-select" required>
         <option value="">Seleccionar práctica</option>
         {practicas.map(p => (
@@ -68,10 +40,7 @@ const toast      = toastMap[successKey];
         ))}
       </select>
 
-      <label class="teacher-label">
-        Selecciona el grupo al que asignar la práctica
-      </label>
-
+      <label class="teacher-label">Selecciona el grupo al que asignar la práctica</label>
       <select name="grupo_id" class="teacher-select" required>
         <option value="">Seleccionar grupo</option>
         {grupos.map(g => (
@@ -79,18 +48,23 @@ const toast      = toastMap[successKey];
         ))}
       </select>
 
+      <label class="teacher-label">Fecha límite de entrega</label>
+      <input
+        type="date"
+        name="fecha_fin"
+        class="teacher-select"
+        min={hoy}
+        required
+      />
+
       <div class="teacher-actions">
-        <button class="teacher-btn" type="submit">
-          Asignar
-        </button>
+        <button class="teacher-btn" type="submit">Asignar</button>
       </div>
 
     </form>
 
   </TeacherSection>
 
-  {toast && (
-    <Toast message={toast.message} type={toast.type} />
-  )}
+  {toast && <Toast message={toast.message} type={toast.type} />}
 
 </DashboardLayout>

@@ -1,7 +1,5 @@
 // src/pages/api/profesor/calificar.ts
 import type { APIRoute } from "astro";
-import { getValidatedSession } from "../../../business/auth/sessionService";
-import { getUserRole } from "../../../business/auth/userRoleService";
 import { findAlumnoGrupo } from "../../../data/repositories/alumnoRepository";
 import { findGroupByIdAndTeacher } from "../../../data/repositories/grupoRepository";
 import { findResultado, updateResultado } from "../../../data/repositories/resultadoRepository";
@@ -26,9 +24,7 @@ function parseBody(body: unknown): CalificacionBody | null {
   if (
     respuestas_json !== undefined &&
     (typeof respuestas_json !== "object" || respuestas_json === null || Array.isArray(respuestas_json))
-  ) {
-    return null;
-  }
+  ) return null;
 
   return {
     alumno_id:       Number(alumno_id),
@@ -45,16 +41,16 @@ function jsonResponse(data: unknown, status: number) {
   });
 }
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
+  // el middleware ya validó sesión y rol — solo leer locals
+  const { roleData } = locals;
+
+  // verificación adicional: el profesor debe estar aprobado
+  if (roleData.role !== "profesor" || roleData.estado !== "aprobado") {
+    return jsonResponse({ error: "Sin permisos" }, 403);
+  }
+
   try {
-    const user = await getValidatedSession(cookies);
-    if (!user) return jsonResponse({ error: "No autorizado" }, 401);
-
-    const roleData = await getUserRole(user.id);
-    if (roleData?.role !== "profesor" || roleData.estado !== "aprobado") {
-      return jsonResponse({ error: "Sin permisos" }, 403);
-    }
-
     const body    = await request.json();
     const payload = parseBody(body);
 
@@ -73,7 +69,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     return jsonResponse({ ok: true, data }, 200);
 
-  } catch {
+  } catch (e) {
+    console.error("[calificar]", e);
     return jsonResponse({ error: "Error interno del servidor" }, 500);
   }
 };

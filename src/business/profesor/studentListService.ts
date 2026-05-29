@@ -1,7 +1,8 @@
 // src/business/profesor/studentListService.ts
 import { findGroupByIdAndTeacher } from "../../data/repositories/grupoRepository";
 import { findAlumnosByGrupo } from "../../data/repositories/alumnoRepository";
-import { supabaseAdmin } from "../../data/client/supabaseAdmin";
+import { findUsuariosByIds } from "../../data/repositories/userRepository";
+import { buildNombreCompleto } from "../../utils/usuario";
 
 export async function getStudentListByGroup(
   profesorId: number,
@@ -14,20 +15,11 @@ export async function getStudentListByGroup(
   if (!alumnos.length) return [];
 
   const alumnoIds = alumnos.map((a) => a.alumno_id);
+  const usuarios  = await findUsuariosByIds(alumnoIds);
 
-  const { data: usuarios } = await supabaseAdmin
-    .from("usuarios")
-    .select("usuario_id, nombre, apellido_paterno, apellido_materno")
-    .in("usuario_id", alumnoIds);
-
-  return alumnos.map((a) => {
-    const usuario = usuarios?.find((u) => u.usuario_id === a.alumno_id);
-    return {
-      alumno_id: a.alumno_id,
-      nombre: usuario
-        ? `${usuario.nombre} ${usuario.apellido_paterno} ${usuario.apellido_materno}`
-        : "Sin nombre",
-      boleta: a.boleta,
-    };
-  });
+  return alumnos.map((a) => ({
+    alumno_id: a.alumno_id,
+    nombre:    buildNombreCompleto(usuarios.find((u) => u.usuario_id === a.alumno_id)),
+    boleta:    a.boleta,
+  }));
 }

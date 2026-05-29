@@ -12,7 +12,6 @@ export async function getAssignmentFormData(usuarioId: number) {
     getPractices(),
     getGroupsByTeacher(usuarioId),
   ]);
-
   return { practicas, grupos };
 }
 
@@ -24,7 +23,6 @@ export async function getAssignedPracticesByGroup(
   if (!grupo) return [];
 
   const asignaciones = await findAsignacionesByGrupo(grupoId);
-
   const practicas = asignaciones
     .map((row: any) => row.practicas)
     .filter(Boolean);
@@ -40,18 +38,24 @@ export async function assignPracticeToGroup(
   usuarioId:  number,
   practicaId: number,
   grupoId:    number,
+  fechaFinStr?: string,   // viene del formulario
 ) {
   const grupo = await findGroupByIdAndTeacher(grupoId, usuarioId);
   if (!grupo) throw new Error("Grupo no autorizado");
 
-  const hoy    = new Date();
-  const manana = new Date();
-  manana.setDate(hoy.getDate() + 1);
+  const hoy     = new Date();
+  const fechaFin = fechaFinStr
+    ? new Date(fechaFinStr)
+    : new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 1);
+
+  if (isNaN(fechaFin.getTime()) || fechaFin <= hoy) {
+    throw new Error("Fecha inválida");
+  }
 
   await insertAsignacion({
     practica_id:  practicaId,
     grupo_id:     grupoId,
     fecha_inicio: hoy.toISOString(),
-    fecha_fin:    manana.toISOString(),
+    fecha_fin:    fechaFin.toISOString(),
   });
 }

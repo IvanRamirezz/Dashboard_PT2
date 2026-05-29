@@ -4,13 +4,14 @@ import { getValidatedSession } from "../../../business/auth/sessionService";
 import { getUserRole } from "../../../business/auth/userRoleService";
 import { getSafeRedirectPath } from "../../../business/auth/redirects";
 import { deleteStudentById } from "../../../business/admin/adminService";
+import { apiError, apiRedirect } from "../../../utils/apiResponse";
 
 export async function POST({ request, cookies }: APIContext) {
   const user = await getValidatedSession(cookies);
-  if (!user) return new Response("No autorizado", { status: 401 });
+  if (!user) return apiError("No autorizado", 401);
 
   const roleData = await getUserRole(user.id);
-  if (roleData?.role !== "admin") return new Response("Sin permisos", { status: 403 });
+  if (roleData?.role !== "admin") return apiError("Sin permisos", 403);
 
   const formData  = await request.formData();
   const alumno_id = Number(formData.get("alumno_id"));
@@ -19,18 +20,14 @@ export async function POST({ request, cookies }: APIContext) {
     "/dashboard/admin/alumnos"
   );
 
-  if (!alumno_id || alumno_id <= 0) {
-    return new Response("ID inválido", { status: 400 });
-  }
+  if (!alumno_id || alumno_id <= 0) return apiError("ID de alumno inválido", 400);
 
   try {
     await deleteStudentById(alumno_id);
-  } catch (e: any) {
-    console.error(e);
-    return new Response(e.message ?? "Error inesperado", { status: 500 });
+  } catch (e) {
+    console.error("[delete-student]", e);
+    return apiError("Error al eliminar el alumno", 500);
   }
 
-  return Response.redirect(
-    new URL("/dashboard/admin/alumnos?deleted=1", request.url), 303
-  );
+  return apiRedirect(new URL(redirectPath + "?deleted=1", request.url));
 }

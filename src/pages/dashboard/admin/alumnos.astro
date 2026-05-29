@@ -3,20 +3,14 @@
 import DashboardLayout from "../../../presentation/layouts/DashboardLayout.astro";
 import UserEditor from "../../../presentation/components/admin/UserEditor.astro";
 import Toast from "../../../presentation/components/ui/Toast.astro";
-import { getValidatedSession } from "../../../business/auth/sessionService";
-import { getUserRole } from "../../../business/auth/userRoleService";
 import { getStudentByBoleta } from "../../../business/admin/studentService";
 
-const user = await getValidatedSession(Astro.cookies);
-if (!user) return Astro.redirect("/");
-
-const roleData = await getUserRole(user.id);
-if (roleData?.role !== "admin") return Astro.redirect("/");
+const { user } = Astro.locals;
 
 const boleta  = Astro.url.searchParams.get("boleta")  ?? undefined;
-const updated = Astro.url.searchParams.get("updated")  ?? undefined;
-const deleted = Astro.url.searchParams.get("deleted")  ?? undefined;
-const error   = Astro.url.searchParams.get("error")    ?? undefined;
+const updated = Astro.url.searchParams.get("updated") ?? undefined;
+const deleted = Astro.url.searchParams.get("deleted") ?? undefined;
+const error   = Astro.url.searchParams.get("error")   ?? undefined;
 
 const student = boleta ? await getStudentByBoleta(boleta) : null;
 ---

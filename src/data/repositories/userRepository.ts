@@ -1,4 +1,12 @@
+// src/data/repositories/userRepository.ts
 import { supabaseAdmin } from "../../data/client/supabaseAdmin";
+
+export interface UsuarioRow {
+  usuario_id:       number;
+  nombre:           string;
+  apellido_paterno: string;
+  apellido_materno: string;
+}
 
 /*
 crear usuario base
@@ -25,6 +33,22 @@ export async function createUsuario(
   }
 
   return data;
+}
+
+
+/*
+obtener datos de nombre de múltiples usuarios por sus IDs
+*/
+export async function findUsuariosByIds(ids: number[]): Promise<UsuarioRow[]> {
+  if (!ids.length) return [];
+
+  const { data, error } = await supabaseAdmin
+    .from("usuarios")
+    .select("usuario_id, nombre, apellido_paterno, apellido_materno")
+    .in("usuario_id", ids);
+
+  if (error) throw new Error(error.message);
+  return data ?? [];
 }
 
 

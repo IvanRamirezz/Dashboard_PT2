@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from "../../../data/client/supabase";
 
 export const POST: APIRoute = async ({ request }) => {
   const formData = await request.formData();
-  const email    = formData.get("email")?.toString();
+  const email    = formData.get("email")?.toString().trim();
 
   if (!email) {
     return new Response(null, {
@@ -13,18 +13,29 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 
+  // leer cookies directamente del request — no necesitamos el objeto cookies de Astro
+  const requestHeaders  = new Headers({ cookie: request.headers.get("cookie") ?? "" });
   const responseHeaders = new Headers();
-  const supabase = createSupabaseServerClient(request.headers, responseHeaders);
+
+  const supabase = createSupabaseServerClient(requestHeaders, responseHeaders);
+
+  const redirectTo = new URL(
+    "/api/auth/callback?next=/auth/update-password",
+    request.url
+  ).toString();
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: new URL("/api/auth/callback?next=/auth/update-password", request.url).toString(),
+    redirectTo,
   });
 
-  // ✓ redirect manual — responseHeaders incluye la cookie del code_verifier
-  responseHeaders.set(
+  // copiar las cookies que Supabase escribió (incluye code_verifier) antes del redirect
+  const finalHeaders = new Headers(responseHeaders);
+  finalHeaders.set(
     "location",
-    error ? "/auth/forgot-password?error=1" : "/auth/forgot-password?message=sent"
+    error
+      ? "/auth/forgot-password?error=1"
+      : "/auth/forgot-password?message=sent"
   );
 
-  return new Response(null, { status: 302, headers: responseHeaders });
+  return new Response(null, { status: 302, headers: finalHeaders });
 };

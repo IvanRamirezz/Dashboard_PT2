@@ -3,7 +3,8 @@ import { findGroupByIdAndTeacher } from "../../data/repositories/grupoRepository
 import { findAlumnosByGrupo } from "../../data/repositories/alumnoRepository";
 import { findResultadosByAlumnos } from "../../data/repositories/resultadoRepository";
 import { findPracticasByIds } from "../../data/repositories/practicaRepository";
-import { supabaseAdmin } from "../../data/client/supabaseAdmin";
+import { findUsuariosByIds, type UsuarioRow } from "../../data/repositories/userRepository";
+import { buildNombreCompleto } from "../../utils/usuario";
 
 interface ResultadoAlumno {
   alumno_id:       number;
@@ -29,7 +30,7 @@ export async function getStudentsByTeacher(
   const alumnoIds = alumnos.map((a) => a.alumno_id);
 
   const [usuarios, resultados] = await Promise.all([
-    fetchUsuarios(alumnoIds),
+    findUsuariosByIds(alumnoIds),
     findResultadosByAlumnos(alumnoIds),
   ]);
 
@@ -39,36 +40,17 @@ export async function getStudentsByTeacher(
   return construirLista(alumnos, usuarios, resultados, practicas);
 }
 
-// fetchUsuarios permanece aquí porque consulta usuarios — pertenece a userRepository
-// pero para evitar dependencia circular lo mantenemos como helper local
-async function fetchUsuarios(alumnoIds: number[]) {
-  const { data } = await supabaseAdmin
-    .from("usuarios")
-    .select("usuario_id, nombre, apellido_paterno, apellido_materno")
-    .in("usuario_id", alumnoIds);
-  return data ?? [];
-}
-
-function construirNombre(usuario?: {
-  nombre: string;
-  apellido_paterno: string;
-  apellido_materno: string;
-}) {
-  if (!usuario) return "Sin nombre";
-  return `${usuario.nombre} ${usuario.apellido_paterno} ${usuario.apellido_materno}`;
-}
-
 function construirLista(
-  alumnos:   any[],
-  usuarios:  any[],
-  resultados: any[],
-  practicas: any[]
+  alumnos:    { alumno_id: number; boleta: string }[],
+  usuarios:   UsuarioRow[],
+  resultados: { alumno_id: number; practica_id: number; calificacion: number | null; respuestas_json: Record<string, unknown> | null }[],
+  practicas:  { practica_id: number; titulo: string }[]
 ): ResultadoAlumno[] {
   const lista: ResultadoAlumno[] = [];
 
   for (const alumno of alumnos) {
     const usuario          = usuarios.find((u) => u.usuario_id === alumno.alumno_id);
-    const nombre           = construirNombre(usuario);
+    const nombre           = buildNombreCompleto(usuario);
     const resultadosAlumno = resultados.filter((r) => r.alumno_id === alumno.alumno_id);
 
     if (!resultadosAlumno.length) continue;

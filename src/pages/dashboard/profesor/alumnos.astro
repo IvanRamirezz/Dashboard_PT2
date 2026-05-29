@@ -3,30 +3,19 @@ import DashboardLayout from "../../../presentation/layouts/DashboardLayout.astro
 import GrupoSelector from "../../../presentation/components/profesor/GrupoSelector.astro";
 import TeacherSection from "../../../presentation/components/profesor/TeacherSection.astro";
 
-import { requireProfesor } from "../../../business/auth/requireProfesor";
 import { getGroupsByTeacher } from "../../../business/profesor/grupoService";
 import { getStudentListByGroup } from "../../../business/profesor/studentListService";
 
 import "../../../presentation/styles/profesor.css";
 
+const { user, roleData } = Astro.locals;
 
-/* validar sesión + rol */
-const auth = await requireProfesor(Astro.cookies);
-if ("redirect" in auth) return Astro.redirect(auth.redirect);
-const { user, roleData } = auth;
-
-
-/* grupos del profesor */
 const grupos = await getGroupsByTeacher(roleData.usuarioId);
 
-
-/* grupo seleccionado */
 const grupoId =
   Number(Astro.url.searchParams.get("grupo"))
   || grupos?.[0]?.grupo_id;
 
-
-/* alumnos */
 const alumnos = await getStudentListByGroup(roleData.usuarioId, grupoId);
 ---
 

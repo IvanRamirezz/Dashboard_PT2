@@ -4,113 +4,44 @@ import TeacherSection  from "../../../presentation/components/profesor/TeacherSe
 import GrupoSelector   from "../../../presentation/components/profesor/GrupoSelector.astro";
 import Toast           from "../../../presentation/components/ui/Toast.astro";
 
-import { requireProfesor } from "../../../business/auth/requireProfesor";
-import {
-  getGroupsByTeacher,
-  createGroup,
-  deactivateGroupByName 
-} from "../../../business/profesor/grupoService";
+import { getGroupsByTeacher } from "../../../business/profesor/grupoService";
 
 import "../../../presentation/styles/profesor.css";
 
-/* validar sesión */
-const auth = await requireProfesor(Astro.cookies);
-if ("redirect" in auth) return Astro.redirect(auth.redirect);
-const { user, roleData } = auth;
+const { user, roleData } = Astro.locals;
 
-/* grupos */
 const grupos = await getGroupsByTeacher(roleData.usuarioId);
 
-/* grupo seleccionado */
-const grupoId =
-  Number(Astro.url.searchParams.get("grupo"))
-  || grupos?.[0]?.grupo_id;
-
+const grupoId    = Number(Astro.url.searchParams.get("grupo")) || grupos?.[0]?.grupo_id;
 const grupoActual = grupos.find(g => g.grupo_id == grupoId);
 
-/* notificaciones */
 type ToastType = "success" | "error" | "warning" | "info";
+type ToastKey  = "alta" | "baja" | "alta_existe" | "baja_error" | "reactivado";
 
-type ToastKey =
-  | "alta"
-  | "baja"
-  | "alta_existe"
-  | "baja_error"
-  | "reactivado";
-
-const toastMap: Record<
-  ToastKey,
-  { message: string; type: ToastType }
-> = {
-  alta: { message: "Grupo dado de alta exitosamente", type: "success" },
-  baja: { message: "Grupo dado de baja exitosamente", type: "warning" },
-  alta_existe: { message: "Este grupo ya existe", type: "error" },
-  baja_error: { message: "El grupo no existe o ya está dado de baja", type: "error" },
-  reactivado: { message: "Grupo reactivado correctamente", type: "info" },
+const toastMap: Record<ToastKey, { message: string; type: ToastType }> = {
+  alta:        { message: "Grupo dado de alta exitosamente",              type: "success" },
+  baja:        { message: "Grupo dado de baja exitosamente",              type: "warning" },
+  alta_existe: { message: "Este grupo ya existe",                         type: "error"   },
+  baja_error:  { message: "El grupo no existe o ya está dado de baja",    type: "error"   },
+  reactivado:  { message: "Grupo reactivado correctamente",               type: "info"    },
 };
 
-//Tipado de las keys para el toast
 const successKey = Astro.url.searchParams.get("success") as ToastKey | null;
-const toast = successKey ? toastMap[successKey] : undefined;
-
-/* acciones POST */
-if (Astro.request.method === "POST") {
-  const form   = await Astro.request.formData();
-  const action = form.get("action");
-
-  const grupoNombre = form.get("grupo")
-    ?.toString()
-    .toUpperCase()
-    .trim();
-
-  /* ALTA */
-  if (action === "alta" && grupoNombre) {
-
-    const result = await createGroup(roleData.usuarioId, grupoNombre);
-
-    if (result?.error === "existe") {
-      return Astro.redirect("/dashboard/profesor/gestionar-grupos?success=alta_existe");
-    }
-
-    if (result?.reactivated) {
-      return Astro.redirect("/dashboard/profesor/gestionar-grupos?success=reactivado");
-    }
-
-    return Astro.redirect("/dashboard/profesor/gestionar-grupos?success=alta");
-}
-
-  /* BAJA */
-  if (action === "baja" && grupoNombre) {
-    const result = await deactivateGroupByName(roleData.usuarioId, grupoNombre);
-
-    if (result?.error === "no_existe") {
-      return Astro.redirect("/dashboard/profesor/gestionar-grupos?success=baja_error");
-    }
-
-    return Astro.redirect("/dashboard/profesor/gestionar-grupos?success=baja");
-  }
-
-  return Astro.redirect("/dashboard/profesor/gestionar-grupos");
-}
+const toast      = successKey ? toastMap[successKey] : undefined;
 ---
 
-<DashboardLayout
-  title="Gestión del grupo"
-  role="profesor"
-  userEmail={user.email}
->
+<DashboardLayout title="Gestión del grupo" role="profesor" userEmail={user.email}>
 
-  <TeacherSection title="Gestión del grupo"
-    description="
-    Puedes crear nuevos grupos, seleccionar uno existente para consultar su código de acceso o darlo de baja."
+  <TeacherSection
+    title="Gestión del grupo"
+    description="Puedes crear nuevos grupos, seleccionar uno existente para consultar su código de acceso o darlo de baja."
   >
 
-    <form method="POST">
+    <form method="POST" action="/api/profesor/gestionar-grupos">
 
       <label class="grupo-label">Grupo</label>
 
       <div class="grupo-actions">
-
         <input
           type="text"
           name="grupo"
@@ -119,39 +50,25 @@ if (Astro.request.method === "POST") {
           style="text-transform: uppercase;"
           oninput="this.value = this.value.toUpperCase()"
         />
-
-        <button name="action" value="alta" class="btn-primary">
-          Dar de alta
-        </button>
-
-        <button name="action" value="baja" class="btn-danger">
-          Dar de baja
-        </button>
-
+        <button name="action" value="alta" class="btn-primary">Dar de alta</button>
+        <button name="action" value="baja" class="btn-danger">Dar de baja</button>
       </div>
 
     </form>
 
     <div class="grupo-info">
-
       <div>
         <label>Selecciona el grupo:</label>
         <GrupoSelector grupos={grupos} grupoId={grupoId} />
       </div>
-
       <div>
         <label>Código del grupo:</label>
-        <div class="codigo-box">
-          {grupoActual?.codigo_acceso || "----"}
-        </div>
+        <div class="codigo-box">{grupoActual?.codigo_acceso || "----"}</div>
       </div>
-
     </div>
 
   </TeacherSection>
 
-  {toast && (
-    <Toast message={toast.message} type={toast.type} />
-  )}
+  {toast && <Toast message={toast.message} type={toast.type} />}
 
 </DashboardLayout>

@@ -3,17 +3,13 @@ import DashboardLayout from "../../../presentation/layouts/DashboardLayout.astro
 import GrupoSelector from "../../../presentation/components/profesor/GrupoSelector.astro";
 import TeacherSection from "../../../presentation/components/profesor/TeacherSection.astro";
 
-import { requireProfesor } from "../../../business/auth/requireProfesor";
 import { getGroupsByTeacher } from "../../../business/profesor/grupoService";
 import { getStudentsByTeacher } from "../../../business/profesor/alumnoService";
 import { getAssignedPracticesByGroup } from "../../../business/profesor/asignacionService";
 
 import "../../../presentation/styles/profesor.css";
 
-
-const auth = await requireProfesor(Astro.cookies);
-if ("redirect" in auth) return Astro.redirect(auth.redirect);
-const { user, roleData } = auth;
+const { user, roleData } = Astro.locals;
 
 const grupos = await getGroupsByTeacher(roleData.usuarioId);
 
@@ -66,7 +62,6 @@ if (practicaId) {
   </select>
 
   <table class="teacher-table">
-
     <thead>
       <tr>
         <th>Alumno</th>
@@ -75,7 +70,6 @@ if (practicaId) {
         <th>Calificación</th>
       </tr>
     </thead>
-
     <tbody>
       {alumnos.length === 0 ? (
         <tr>
@@ -89,7 +83,6 @@ if (practicaId) {
           <td>
             {a.calificacion !== null ? (
               <div class="calificacion-cell">
-
                 <span class="calificacion-num">
                   {a.calificacion.toFixed(2)}
                 </span>
@@ -114,46 +107,45 @@ if (practicaId) {
                 Calificar
               </button>
             )}
-
           </td>
         </tr>
       ))}
     </tbody>
-
   </table>
-
-  <!-- MODAL -->
-  <div id="modalCalificar" class="modal">
-    <div class="modal-content">
-
-      <h3 id="modalTitulo">Calificar práctica</h3>
-
-      <p class="calificacion-info">
-          Califica cada pregunta de <strong>0 a 1</strong> (se permiten decimales).
-      </p>
-
-      <form id="formCalificacion">
-
-        <div id="preguntasContainer"></div>
-
-        <div class="resultado-preview">
-          Calificación final:
-          <strong id="previewCalificacion">0</strong>
-        </div>
-
-        <div class="teacher-actions">
-          <button type="submit" class="teacher-btn">
-            Guardar calificación
-          </button>
-        </div>
-
-      </form>
-
-    </div>
-  </div>
 
 </TeacherSection>
 
 </DashboardLayout>
 
-<script src="/scripts/calificarModal.js" is:inline></script>
+<!-- ↓ MODAL FUERA del DashboardLayout — si está adentro, overflow:hidden lo recorta -->
+<div id="modalCalificar" class="modal-calificar">
+  <div class="modal-content">
+
+    <h3 id="modalTitulo">Calificar práctica</h3>
+
+    <p class="calificacion-info">
+      Califica cada pregunta de <strong>0 a 1</strong> (se permiten decimales).
+    </p>
+
+    <form id="formCalificacion">
+      <div id="preguntasContainer"></div>
+
+      <div class="resultado-preview">
+        Calificación final:
+        <strong id="previewCalificacion">0</strong>
+      </div>
+
+      <div class="teacher-actions">
+        <button type="submit" class="teacher-btn">
+          Guardar calificación
+        </button>
+        <button type="button" class="teacher-btn-sm" onclick="cerrarModal()">
+          Cancelar
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<script src="/script/calificarModal.js" is:inline></script>

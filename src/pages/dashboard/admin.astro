@@ -1,18 +1,10 @@
 ---
-// src/pages/dashboard/admin.astro
 import DashboardLayout from "../../presentation/layouts/DashboardLayout.astro";
 import ApproveTeacherModal from "../../presentation/components/ui/modals/ApproveTeacherModal.astro";
 import RejectTeacherModal from "../../presentation/components/ui/modals/RejectTeacherModal.astro";
-import { getValidatedSession } from "../../business/auth/sessionService";
-import { getUserRole } from "../../business/auth/userRoleService";
 import { getPendingTeachers } from "../../business/admin/adminService";
 
-const user = await getValidatedSession(Astro.cookies);
-if (!user) return Astro.redirect("/");
-
-const roleData = await getUserRole(user.id);
-if (roleData?.role !== "admin") return Astro.redirect("/");
-
+const { user } = Astro.locals;
 const pendingTeachers = await getPendingTeachers();
 ---
 

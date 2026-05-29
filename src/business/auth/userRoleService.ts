@@ -1,10 +1,12 @@
+// src/business/auth/userRoleService.ts
 import { supabaseAdmin } from "../../data/client/supabaseAdmin";
 
-export async function getUserRole(authUid: string) {
+export type RoleData =
+  | { role: "admin";   usuarioId: number; nombre: string; estado?: undefined }
+  | { role: "profesor"; usuarioId: number; nombre: string; estado: "pendiente" | "aprobado" | "rechazado" };
 
-  /*
-  obtener datos del usuario base
-  */
+export async function getUserRole(authUid: string): Promise<RoleData | null> {
+
   const { data: usuario } = await supabaseAdmin
     .from("usuarios")
     .select(`
@@ -20,9 +22,6 @@ export async function getUserRole(authUid: string) {
 
   const usuarioId = usuario.usuario_id;
 
-  /*
-  consultar admin y profesor en paralelo
-  */
   const [{ data: admin }, { data: profesor }] = await Promise.all([
     supabaseAdmin
       .from("administrador")
@@ -37,10 +36,6 @@ export async function getUserRole(authUid: string) {
       .single()
   ]);
 
-
-  /*
-  construir nombre completo
-  */
   const nombreCompleto = [
     usuario.nombre,
     usuario.apellido_paterno,
@@ -49,18 +44,17 @@ export async function getUserRole(authUid: string) {
     .filter(Boolean)
     .join(" ");
 
-
   if (admin) return {
-    role: "admin",
+    role:     "admin" as const,
     usuarioId,
-    nombre: nombreCompleto
+    nombre:   nombreCompleto,
   };
 
   if (profesor) return {
-    role: "profesor",
-    estado: profesor.estado,
+    role:     "profesor" as const,
+    estado:   profesor.estado as "pendiente" | "aprobado" | "rechazado",
     usuarioId,
-    nombre: nombreCompleto
+    nombre:   nombreCompleto,
   };
 
   return null;

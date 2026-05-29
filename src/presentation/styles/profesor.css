@@ -187,6 +187,7 @@
   display: flex;
   justify-content: center;
   margin-top: var(--sp-4);
+  gap: var(--sp-3);
 }
 
 /* ── Formulario box ── */
@@ -251,7 +252,8 @@
 /* ════════════════════════════════════
    MODAL CALIFICAR
    ════════════════════════════════════ */
-.modal {
+
+.modal-calificar {
   display: none;
   position: fixed;
   inset: 0;
@@ -277,6 +279,10 @@
   color: var(--dark);
   margin-bottom: var(--sp-2);
   margin-top: 0;
+}
+
+.modal-calificar .respuesta-texto {
+  color: var(--dark);
 }
 
 .calificacion-info {

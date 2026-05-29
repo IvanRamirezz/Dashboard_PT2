@@ -116,8 +116,13 @@ function crearPreguntas(respuestas, esEdicion) {
   }
 
   Object.entries(respuestas).forEach(([pregunta, valor], index) => {
-    const respuestaTexto = esEdicion ? valor.respuesta  : valor;
-    const calificacion   = esEdicion ? (valor.calificacion ?? "") : "";
+    // cuando esEdicion: valor = { respuesta: "...", calificacion: 0.8 }
+    // cuando es nuevo:  valor = "texto de respuesta directamente"
+    const respuestaTexto = esEdicion
+      ? (valor?.respuesta ?? "Sin respuesta")
+      : (typeof valor === "string" ? valor : JSON.stringify(valor));
+
+    const calificacion = esEdicion ? (valor?.calificacion ?? "") : "";
 
     const div = document.createElement("div");
     div.className = "pregunta-box";

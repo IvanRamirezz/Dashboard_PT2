@@ -1,17 +1,9 @@
 ---
 import DashboardLayout from "../../presentation/layouts/DashboardLayout.astro";
-
-import { requireProfesor } from "../../business/auth/requireProfesor";
 import { getTeacherStats } from "../../business/profesor/profesorService";
-
 import "../../presentation/styles/profesor.css";
 
-
-/* validar sesión + rol */
-const auth = await requireProfesor(Astro.cookies);
-if ("redirect" in auth) return Astro.redirect(auth.redirect);
-const { user, roleData } = auth;
-
+const { user, roleData } = Astro.locals;
 
 const stats  = await getTeacherStats(roleData.usuarioId);
 const nombre = roleData.nombre ?? user.email;

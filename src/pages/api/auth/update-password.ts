@@ -22,11 +22,16 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     return new Response(null, { status: 302, headers: responseHeaders });
   }
 
-  const supabase = createSupabaseServerClient(request.headers, responseHeaders);
+  // CRÍTICO: pasar las cookies del request al cliente Supabase
+  // sin esto, updateUser no encuentra la sesión activa y siempre falla
+  const requestHeaders = new Headers({
+    cookie: request.headers.get("cookie") ?? "",
+  });
+
+  const supabase = createSupabaseServerClient(requestHeaders, responseHeaders);
   const { error } = await supabase.auth.updateUser({ password });
 
   if (error) {
-    // Supabase devuelve code "same_password" cuando es igual a la actual
     const location = error.code === "same_password"
       ? "/auth/update-password?error=misma_contrasena"
       : "/auth/update-password?error=error_actualizacion";

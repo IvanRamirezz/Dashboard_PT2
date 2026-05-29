@@ -4,13 +4,14 @@ import { getValidatedSession } from "../../../business/auth/sessionService";
 import { getUserRole } from "../../../business/auth/userRoleService";
 import { getSafeRedirectPath } from "../../../business/auth/redirects";
 import { updateTeacherData } from "../../../business/admin/adminService";
+import { apiError, apiRedirect } from "../../../utils/apiResponse";
 
 export async function POST({ request, cookies }: APIContext) {
   const user = await getValidatedSession(cookies);
-  if (!user) return new Response("No autorizado", { status: 401 });
+  if (!user) return apiError("No autorizado", 401);
 
   const roleData = await getUserRole(user.id);
-  if (roleData?.role !== "admin") return new Response("Sin permisos", { status: 403 });
+  if (roleData?.role !== "admin") return apiError("Sin permisos", 403);
 
   const formData = await request.formData();
 
@@ -24,17 +25,14 @@ export async function POST({ request, cookies }: APIContext) {
     "/dashboard/admin/profesores"
   );
 
-  if (!profesor_id || profesor_id <= 0) {
-    return new Response("ID de profesor inválido", { status: 400 });
-  }
+  if (!profesor_id || profesor_id <= 0) return apiError("ID de profesor inválido", 400);
 
   if (!nombre || !apellido_paterno || !apellido_materno || !matricula_trabajador) {
-  // construir URL limpia sin parámetros previos
-  const errorUrl = new URL("/dashboard/admin/profesores", request.url);
-  if (matricula_trabajador) errorUrl.searchParams.set("matricula", matricula_trabajador);
-  errorUrl.searchParams.set("error", "campos_vacios");
-  return Response.redirect(errorUrl, 303);
-}
+    const errorUrl = new URL("/dashboard/admin/profesores", request.url);
+    if (matricula_trabajador) errorUrl.searchParams.set("matricula", matricula_trabajador);
+    errorUrl.searchParams.set("error", "campos_vacios");
+    return apiRedirect(errorUrl);
+  }
 
   try {
     await updateTeacherData(profesor_id, {
@@ -44,9 +42,9 @@ export async function POST({ request, cookies }: APIContext) {
       matricula_trabajador,
     });
   } catch (e) {
-    console.error(e);
-    return new Response("Error al actualizar", { status: 500 });
+    console.error("[update-teacher]", e);
+    return apiError("Error al actualizar el profesor", 500);
   }
 
-  return Response.redirect(new URL(redirectPath, request.url), 303);
+  return apiRedirect(new URL(redirectPath, request.url));
 }

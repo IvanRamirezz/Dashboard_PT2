@@ -1,83 +1,41 @@
+// src/pages/api/auth/register.ts
 import type { APIContext } from "astro";
 import { validateRegister } from "../../../business/auth/authValidator";
-import { registerUser } from "../../../business/auth/authService";
+import { registerUser, type RegisterPayload } from "../../../business/auth/authService";
 
 export async function POST({ request, redirect }: APIContext) {
-
-  let data: any;
+  let role: string | undefined;
 
   try {
-
     const formData = await request.formData();
 
-    data = {
-      nombre:          formData.get("nombre"),
-      apellidoPaterno: formData.get("apellidoPaterno"),
-      apellidoMaterno: formData.get("apellidoMaterno"),
-      email:           formData.get("email"),
-      password:        formData.get("password"),
-      passwordConfirm: formData.get("passwordConfirm"),
-      role:            formData.get("role"),
-      boleta:          formData.get("boleta"),
-      matricula:       formData.get("matricula"),
-      baseUrl:         new URL(request.url).origin,  // ← agregar
+    const data: RegisterPayload = {
+      nombre:          formData.get("nombre")?.toString() ?? "",
+      apellidoPaterno: formData.get("apellidoPaterno")?.toString() ?? "",
+      apellidoMaterno: formData.get("apellidoMaterno")?.toString() ?? "",
+      email:           formData.get("email")?.toString() ?? "",
+      password:        formData.get("password")?.toString() ?? "",
+      passwordConfirm: formData.get("passwordConfirm")?.toString() ?? "",
+      role:            (formData.get("role")?.toString() ?? "student") as "student" | "teacher",
+      boleta:          formData.get("boleta")?.toString() ?? undefined,
+      matricula:       formData.get("matricula")?.toString() ?? undefined,
+      baseUrl:         new URL(request.url).origin,
     };
 
+    role = data.role;
 
     validateRegister(data);
-
     await registerUser(data);
 
+    return redirect(`/register/success?type=${data.role}`);
 
-    return redirect(
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "unknown";
 
-      `/register/success?type=${data.role}`
-
-    );
-
-  }
-
-
-  catch (err:any) {
-
-
-    /*
-    email duplicado
-    */
-    if (err.message === "EMAIL_EXISTS") {
-
-      return redirect(
-
-        `/register/error?reason=email&type=${data?.role}`
-
-      );
-
-    }
-
-
-    /*
-    boleta o matricula duplicada
-    */
-    if (err.message === "DATA_EXISTS") {
-
-      return redirect(
-
-        `/register/error?reason=duplicate&type=${data?.role}`
-
-      );
-
-    }
-
+    if (message === "EMAIL_EXISTS")  return redirect(`/register/error?reason=email&type=${role}`);
+    if (message === "DATA_EXISTS")   return redirect(`/register/error?reason=duplicate&type=${role}`);
 
     console.error(err);
-
-
-    return redirect(
-
-      `/register/error?reason=unknown&type=${data?.role}`
-
-    );
-
+    return redirect(`/register/error?reason=unknown&type=${role}`);
   }
-
 }
