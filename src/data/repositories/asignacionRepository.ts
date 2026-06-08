@@ -5,14 +5,17 @@ export async function findAsignacionesByGrupo(grupoId: number) {
   const { data, error } = await supabaseAdmin
     .from("practicas_grupo")
     .select(`
+      asignacion_id,
       practica_id,
+      fecha_inicio,
+      fecha_fin,
       practicas (
         practica_id,
         titulo
       )
     `)
     .eq("grupo_id", grupoId)
-    .eq("activo", true);
+    .order("fecha_fin");
 
   if (error) throw error;
   return data ?? [];
@@ -26,7 +29,6 @@ export async function insertAsignacion(datos: {
 }) {
   const { error } = await supabaseAdmin
     .from("practicas_grupo")
-    .insert({ ...datos, activo: true });
-
+    .insert(datos);
   if (error) throw error;
 }

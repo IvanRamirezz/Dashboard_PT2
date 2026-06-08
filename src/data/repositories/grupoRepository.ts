@@ -1,18 +1,22 @@
 // src/data/repositories/grupoRepository.ts
 import { supabaseAdmin } from "../client/supabaseAdmin";
 
-export async function findGroupsByTeacher(profesorId: number) {
-  const { data, error } = await supabaseAdmin
+export async function findGroupsByTeacher(profesorId: number, cicloEscolar?: string) {
+  let query = supabaseAdmin
     .from("grupos")
     .select("grupo_id, nombre, codigo_acceso, ciclo_escolar")
     .eq("profesor_id", profesorId)
     .eq("activo", true)
     .order("nombre");
 
+  if (cicloEscolar) query = query.eq("ciclo_escolar", cicloEscolar);
+
+  const { data, error } = await query;
   if (error) throw error;
   return data ?? [];
 }
 
+// el resto de funciones no cambia
 export async function findGroupByName(
   profesorId: number,
   nombre: string,
@@ -25,7 +29,6 @@ export async function findGroupByName(
     .eq("nombre",        nombre)
     .eq("ciclo_escolar", cicloEscolar)
     .maybeSingle();
-
   return data ?? null;
 }
 
@@ -35,14 +38,10 @@ export async function findGroupByCode(codigoAcceso: string) {
     .select("grupo_id")
     .eq("codigo_acceso", codigoAcceso)
     .maybeSingle();
-
   return data ?? null;
 }
 
-export async function findGroupByIdAndTeacher(
-  grupoId: number,
-  profesorId: number
-) {
+export async function findGroupByIdAndTeacher(grupoId: number, profesorId: number) {
   const { data } = await supabaseAdmin
     .from("grupos")
     .select("grupo_id")
@@ -50,7 +49,6 @@ export async function findGroupByIdAndTeacher(
     .eq("profesor_id", profesorId)
     .eq("activo",      true)
     .maybeSingle();
-
   return data ?? null;
 }
 
@@ -60,7 +58,6 @@ export async function findGroupIdsByTeacher(profesorId: number) {
     .select("grupo_id")
     .eq("profesor_id", profesorId)
     .eq("activo", true);
-
   return data ?? [];
 }
 
@@ -75,7 +72,6 @@ export async function insertGroup(datos: {
     .insert({ ...datos, activo: true })
     .select()
     .single();
-
   if (error) throw error;
   return data;
 }
@@ -85,7 +81,6 @@ export async function updateGroupActivo(grupoId: number, activo: boolean) {
     .from("grupos")
     .update({ activo })
     .eq("grupo_id", grupoId);
-
   if (error) throw error;
 }
 
@@ -95,6 +90,5 @@ export async function countGroupsByTeacher(profesorId: number) {
     .select("*", { count: "exact", head: true })
     .eq("profesor_id", profesorId)
     .eq("activo", true);
-
   return count ?? 0;
 }

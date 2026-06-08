@@ -38,17 +38,21 @@ export async function assignPracticeToGroup(
   usuarioId:  number,
   practicaId: number,
   grupoId:    number,
-  fechaFinStr?: string,   // viene del formulario
+  fechaFinStr?: string,
 ) {
   const grupo = await findGroupByIdAndTeacher(grupoId, usuarioId);
   if (!grupo) throw new Error("Grupo no autorizado");
 
-  const hoy     = new Date();
+  const hoy = new Date();
+
+  // fecha de hoy sin hora (solo año/mes/día) para comparar limpio
+  const hoyStr = hoy.toISOString().split("T")[0]; // "2026-06-07"
+
   const fechaFin = fechaFinStr
-    ? new Date(fechaFinStr)
+    ? new Date(fechaFinStr + "T23:59:59")   // ← fin del día elegido, hora local
     : new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 1);
 
-  if (isNaN(fechaFin.getTime()) || fechaFin <= hoy) {
+  if (!fechaFinStr || fechaFinStr < hoyStr) {
     throw new Error("Fecha inválida");
   }
 

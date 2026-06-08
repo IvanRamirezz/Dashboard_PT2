@@ -3,12 +3,12 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-  "dev": "astro dev",
-  "build": "astro build",
-  "preview": "astro preview",
-  "astro": "astro",
-  "test": "vitest run",
-  "test:watch": "vitest"
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@astrojs/vercel": "^10.0.4",
@@ -17,6 +17,7 @@
     "astro": "^6.1.8"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "vitest": "^3.2.4"
   }
 }
