@@ -2,6 +2,7 @@
 import {
   findPendingTeachers,
   findTeacherByMatricula,
+  findProfesoresByNombre,
   updateTeacherUsuario,
   updateTeacherEstado,
   deleteProfesorById,
@@ -15,9 +16,17 @@ import {
 
 export type Teacher = TeacherRow;
 
+const TEACHER_PAGE_SIZE = 5;
+
 export async function getPendingTeachers(): Promise<Teacher[]> {
   return findPendingTeachers();
 }
+
+export async function getProfesorListAdmin(page: number, nombre?: string) {
+  return findProfesoresByNombre(page, TEACHER_PAGE_SIZE, nombre);
+}
+
+export { TEACHER_PAGE_SIZE };
 
 export async function getTeacherByMatricula(matricula: string): Promise<Teacher | null> {
   return findTeacherByMatricula(matricula);

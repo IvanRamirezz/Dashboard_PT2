@@ -3,7 +3,11 @@
 import DashboardLayout from "../../../presentation/layouts/DashboardLayout.astro";
 import UserEditor from "../../../presentation/components/admin/UserEditor.astro";
 import Toast from "../../../presentation/components/ui/Toast.astro";
-import { getTeacherByMatricula } from "../../../business/admin/adminService";
+import {
+  getTeacherByMatricula,
+  getProfesorListAdmin,
+  TEACHER_PAGE_SIZE,
+} from "../../../business/admin/adminService";
 
 const { user } = Astro.locals;
 
@@ -12,29 +16,197 @@ const updated   = Astro.url.searchParams.get("updated")   ?? undefined;
 const deleted   = Astro.url.searchParams.get("deleted")   ?? undefined;
 const error     = Astro.url.searchParams.get("error")     ?? undefined;
 
-const teacher = matricula ? await getTeacherByMatricula(matricula) : null;
+const editMode = !!matricula;
+
+const search = Astro.url.searchParams.get("search") ?? undefined;
+const page   = Math.max(1, Number(Astro.url.searchParams.get("page") ?? "1"));
+
+let teacher = null;
+let profesores: any[] = [];
+let total      = 0;
+let totalPages = 0;
+
+if (editMode) {
+  teacher = await getTeacherByMatricula(matricula!);
+} else {
+  const result = await getProfesorListAdmin(page, search);
+  profesores = result.data;
+  total      = result.total;
+  totalPages = Math.ceil(total / TEACHER_PAGE_SIZE);
+}
+
+function pageNumbers(cur: number, tot: number): (number | "…")[] {
+  if (tot <= 5) return Array.from({ length: tot }, (_, i) => i + 1);
+  if (cur <= 3) return [1, 2, 3, "…", tot];
+  if (cur >= tot - 2) return [1, "…", tot - 2, tot - 1, tot];
+  return [1, "…", cur - 1, cur, cur + 1, "…", tot];
+}
+
+const pages = totalPages > 1 ? pageNumbers(page, totalPages) : [];
+
+function listUrl(overrides: Record<string, string | number | undefined>) {
+  const p = new URLSearchParams();
+  const vals = { search, page, ...overrides };
+  for (const [k, v] of Object.entries(vals)) {
+    if (v !== undefined && v !== "" && v !== 0) p.set(k, String(v));
+  }
+  return `/dashboard/admin/profesores?${p.toString()}`;
+}
+
+const estadoLabel: Record<string, string> = {
+  aprobado:  "Aprobado",
+  pendiente: "Pendiente",
+  rechazado: "Rechazado",
+};
+
+const estadoBadge: Record<string, string> = {
+  aprobado:  "success",
+  pendiente: "warning",
+  rechazado: "danger",
+};
 ---
 
 <DashboardLayout
-  title="Gestión de profesor"
+  title="Gestión de profesores"
   role="admin"
   userEmail={user.email ?? ""}
 >
-  <UserEditor
-    title="Gestión de profesor"
-    description="Gestiona la información de los profesores registrados. Busca por matrícula, actualiza sus datos o da de baja su registro en el sistema."
-    searchName="matricula"
-    searchLabel="Matrícula"
-    idField="profesor_id"
-    identifierField="matricula_trabajador"
-    identifierValue={matricula}
-    updateAction="/api/admin/update-teacher"
-    deleteAction="/api/admin/delete-teacher"
-    user={teacher}
-    updated={updated}
-  />
 
-  {deleted && <Toast message="Profesor dado de baja correctamente." type="warning" />}
-  {error === "campos_vacios" && <Toast message="Todos los campos son requeridos." type="error" />}
-  {error === "actualizacion" && <Toast message="Error al actualizar. Intenta de nuevo." type="error" />}
+  {editMode ? (
+    <div>
+      <a href="/dashboard/admin/profesores" class="back-link">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Volver a la lista
+      </a>
+
+      <UserEditor
+        title="Editar profesor"
+        description="Actualiza los datos del profesor o da de baja su registro en el sistema."
+        searchName="matricula"
+        searchLabel="Matrícula"
+        idField="profesor_id"
+        identifierField="matricula_trabajador"
+        identifierValue={matricula}
+        updateAction="/api/admin/update-teacher"
+        deleteAction="/api/admin/delete-teacher"
+        user={teacher}
+        updated={updated}
+        hideSearch={true}
+      />
+
+      {deleted && <Toast message="Profesor dado de baja correctamente." type="warning" />}
+      {error === "campos_vacios" && <Toast message="Todos los campos son requeridos." type="error" />}
+      {error === "actualizacion" && <Toast message="Error al actualizar. Intenta de nuevo." type="error" />}
+    </div>
+  ) : (
+    <div class="module">
+      <h2>Gestión de profesores</h2>
+      <p class="module-description">Busca profesores por nombre para ver y editar su información.</p>
+
+      <!-- Buscador -->
+      <form method="GET" class="filters-form">
+        <div class="filters-row">
+          <div class="filter-field filter-field--grow">
+            <label class="filter-label">Nombre</label>
+            <div class="filter-search-row">
+              <input
+                name="search"
+                class="filter-input"
+                placeholder="Buscar por nombre o apellido"
+                value={search ?? ""}
+              />
+              <button type="submit" class="btn primary">Buscar</button>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <!-- Tabla -->
+      <div class="section-header">
+        <span class="section-title">Profesores registrados</span>
+        <span class="badge-total">Total: {total}</span>
+      </div>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Apellido paterno</th>
+            <th>Apellido materno</th>
+            <th>Matrícula</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {profesores.length === 0 ? (
+            <tr>
+              <td colspan="6" class="empty-row">
+                {search ? "No se encontraron profesores con ese nombre." : "No hay profesores registrados."}
+              </td>
+            </tr>
+          ) : (
+            profesores.map((p) => (
+              <tr>
+                <td>{p.usuarios?.nombre}</td>
+                <td>{p.usuarios?.apellido_paterno}</td>
+                <td>{p.usuarios?.apellido_materno}</td>
+                <td>{p.matricula_trabajador}</td>
+                <td>
+                  <span class={`badge ${estadoBadge[p.estado] ?? "warning"}`}>
+                    {estadoLabel[p.estado] ?? p.estado}
+                  </span>
+                </td>
+                <td>
+                  <a href={`/dashboard/admin/profesores?matricula=${p.matricula_trabajador}`} class="btn-edit">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    Editar
+                  </a>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+
+      <!-- Paginación -->
+      {totalPages > 1 && (
+        <div class="pagination">
+          <a
+            href={listUrl({ page: page - 1 })}
+            class:list={["page-btn", { "page-btn--disabled": page === 1 }]}
+            aria-disabled={page === 1}
+          >Anterior</a>
+
+          {pages.map((p) =>
+            p === "…" ? (
+              <span class="page-ellipsis">…</span>
+            ) : (
+              <a
+                href={listUrl({ page: p })}
+                class:list={["page-btn", { "page-btn--active": p === page }]}
+              >{p}</a>
+            )
+          )}
+
+          <a
+            href={listUrl({ page: page + 1 })}
+            class:list={["page-btn", { "page-btn--disabled": page === totalPages }]}
+            aria-disabled={page === totalPages}
+          >Siguiente</a>
+        </div>
+      )}
+
+      <!-- Info tip -->
+      <div class="info-tip">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        Selecciona un profesor y da clic en "Editar" para modificar su información.
+      </div>
+
+      {deleted && <Toast message="Profesor dado de baja correctamente." type="warning" />}
+      {error === "campos_vacios" && <Toast message="Todos los campos son requeridos." type="error" />}
+      {error === "actualizacion" && <Toast message="Error al actualizar. Intenta de nuevo." type="error" />}
+    </div>
+  )}
+
 </DashboardLayout>

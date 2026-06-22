@@ -23,6 +23,45 @@ const SELECT_TEACHER = `
   )
 `;
 
+export async function findProfesoresByNombre(
+  page: number,
+  limit: number,
+  nombre?: string
+): Promise<{ data: TeacherRow[]; total: number }> {
+  const from = (page - 1) * limit;
+
+  if (nombre) {
+    const { data: users } = await supabaseAdmin
+      .from("usuarios")
+      .select("usuario_id")
+      .or(
+        `nombre.ilike.%${nombre}%,apellido_paterno.ilike.%${nombre}%,apellido_materno.ilike.%${nombre}%`
+      );
+
+    const ids = (users ?? []).map((u) => u.usuario_id);
+    if (ids.length === 0) return { data: [], total: 0 };
+
+    const { data, count, error } = await supabaseAdmin
+      .from("profesores")
+      .select(SELECT_TEACHER, { count: "exact" })
+      .in("profesor_id", ids)
+      .order("profesor_id")
+      .range(from, from + limit - 1);
+
+    if (error) throw new Error(error.message);
+    return { data: (data ?? []) as unknown as TeacherRow[], total: count ?? 0 };
+  }
+
+  const { data, count, error } = await supabaseAdmin
+    .from("profesores")
+    .select(SELECT_TEACHER, { count: "exact" })
+    .order("profesor_id")
+    .range(from, from + limit - 1);
+
+  if (error) throw new Error(error.message);
+  return { data: (data ?? []) as unknown as TeacherRow[], total: count ?? 0 };
+}
+
 export async function findPendingTeachers(): Promise<TeacherRow[]> {
   const { data, error } = await supabaseAdmin
     .from("profesores")

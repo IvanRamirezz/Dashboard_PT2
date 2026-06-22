@@ -15,6 +15,7 @@ interface Props {
   deleteAction: string
   user?: any
   updated?: string | null
+  hideSearch?: boolean
 }
 
 const {
@@ -28,7 +29,8 @@ const {
   updateAction,
   deleteAction,
   user,
-  updated
+  updated,
+  hideSearch = false,
 } = Astro.props;
 
 const userId = user?.[idField] ?? user?.usuarios?.[idField];
@@ -42,15 +44,17 @@ const userId = user?.[idField] ?? user?.usuarios?.[idField];
     <p class="module-description">{description}</p>
   )}
 
-  <form method="GET" class="search-box">
-    <div class="search-field">
-      <label class="search-label">{searchLabel}</label>
-      <div class="search-row">
-        <input name={searchName} value={identifierValue ?? ""} />
-        <button class="btn primary">Buscar</button>
+  {!hideSearch && (
+    <form method="GET" class="search-box">
+      <div class="search-field">
+        <label class="search-label">{searchLabel}</label>
+        <div class="search-row">
+          <input name={searchName} value={identifierValue ?? ""} />
+          <button class="btn primary">Buscar</button>
+        </div>
       </div>
-    </div>
-  </form>
+    </form>
+  )}
 
   {user && (
     <form method="POST" action={updateAction}>
