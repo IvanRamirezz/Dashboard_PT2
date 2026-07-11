@@ -12,8 +12,9 @@ function validarFormatoCodigo(codigo: string): boolean {
 
 function calcularCicloEscolar(): string {
   const now     = new Date();
-  const year    = now.getFullYear();
-  const periodo = now.getMonth() < 6 ? "2" : "1";
+  const mes     = now.getMonth();
+  const periodo = mes < 6 ? "2" : "1";
+  const year    = mes < 6 ? now.getFullYear() : now.getFullYear() + 1;
   return `${year}-${periodo}`;
 }
 
@@ -23,7 +24,7 @@ describe("calcularCicloEscolar", () => {
     expect(ciclo).toMatch(/^\d{4}-[12]$/);
   });
 
-  it("retorna periodo 2 para meses enero-mayo (< 6)", () => {
+  it("retorna periodo 2 para meses enero-junio (< 6) y periodo 1 para julio-diciembre", () => {
     const ciclo = calcularCicloEscolar();
     const mes   = new Date().getMonth();
     const [, periodo] = ciclo.split("-");
@@ -35,10 +36,12 @@ describe("calcularCicloEscolar", () => {
     }
   });
 
-  it("retorna el año actual", () => {
+  it("usa el año siguiente para el semestre 1 (julio-diciembre) y el año actual para el semestre 2", () => {
     const ciclo = calcularCicloEscolar();
+    const mes   = new Date().getMonth();
     const [year] = ciclo.split("-");
-    expect(Number(year)).toBe(new Date().getFullYear());
+    const esperado = mes < 6 ? new Date().getFullYear() : new Date().getFullYear() + 1;
+    expect(Number(year)).toBe(esperado);
   });
 });
 

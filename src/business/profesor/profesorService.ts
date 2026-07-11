@@ -1,7 +1,9 @@
 // src/business/profesor/profesorService.ts
 import { supabaseAdmin } from "../../data/client/supabaseAdmin";
+import { calcularCicloEscolar } from "./grupoService";
 
 export async function getTeacherStats(usuarioId: number) {
+  const ciclo = calcularCicloEscolar();
 
   // queries independientes en paralelo
   const [{ count: grupos }, { count: practicas }, { data: gruposProfesor }] =
@@ -10,7 +12,8 @@ export async function getTeacherStats(usuarioId: number) {
         .from("grupos")
         .select("*", { count: "exact", head: true })
         .eq("profesor_id", usuarioId)
-        .eq("activo", true),
+        .eq("activo", true)
+        .eq("ciclo_escolar", ciclo),
 
       supabaseAdmin
         .from("practicas")
@@ -21,7 +24,8 @@ export async function getTeacherStats(usuarioId: number) {
         .from("grupos")
         .select("grupo_id")
         .eq("profesor_id", usuarioId)
-        .eq("activo", true),
+        .eq("activo", true)
+        .eq("ciclo_escolar", ciclo),
     ]);
 
   const gruposIds = gruposProfesor?.map((g) => g.grupo_id) ?? [];

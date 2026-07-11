@@ -43,7 +43,13 @@ export async function POST({ request, cookies }: APIContext) {
     });
   } catch (e) {
     console.error("[update-teacher]", e);
-    return apiError("Error al actualizar el profesor", 500);
+    const errorUrl = new URL(redirectPath, request.url);
+    errorUrl.searchParams.delete("updated");
+    errorUrl.searchParams.set(
+      "error",
+      e instanceof Error && e.message === "MATRICULA_EXISTS" ? "matricula_duplicada" : "actualizacion"
+    );
+    return apiRedirect(errorUrl);
   }
 
   return apiRedirect(new URL(redirectPath, request.url));

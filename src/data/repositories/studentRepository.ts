@@ -104,5 +104,8 @@ export async function updateStudentByUsuarioId(
   ]);
 
   if (userError)  throw new Error(userError.message);
-  if (alumnoError) throw new Error(alumnoError.message);
+  if (alumnoError) {
+    if (alumnoError.code === "23505") throw new Error("BOLETA_EXISTS");
+    throw new Error(alumnoError.message);
+  }
 }

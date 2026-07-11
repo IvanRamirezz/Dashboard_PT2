@@ -63,11 +63,13 @@ Three roles: `admin`, `profesor`, `alumno`. Teachers have an `estado` field (`pe
 
 ### Group codes
 
-Generated in `groupService.ts`: 5 characters drawn from `[A-Z]` minus `O` and `I`, plus digits `2–9` (avoids ambiguous characters `0`, `1`).
+Generated in `grupoService.ts`: 5 characters drawn from `[A-Z]` minus `O` and `I`, plus digits `2–9` (avoids ambiguous characters `0`, `1`).
 
 ### School year (ciclo escolar)
 
-Computed from current date: months 1–5 → period `2`, months 6–12 → period `1`. Format: `YYYY-P` (e.g., `2026-2`).
+Computed from current date, format `YYYY-P`:
+- Months 1–6 (Jan–Jun) → period `2`, year = current year (e.g., `2027-2`).
+- Months 7–12 (Jul–Dec) → period `1`, year = **next** year, since this half starts a school year that concludes the following calendar year (e.g., July 2026 → `2027-1`).
 
 ## Environment variables
 
@@ -86,7 +88,7 @@ Computed from current date: months 1–5 → period `2`, months 6–12 → perio
 
 The Supabase/PostgreSQL database schema is documented in:
 
-@docs/database/schema.sql
+@src/doc/database/schema.sql
 
 Use this file as the source of truth for:
 - tables
@@ -100,4 +102,4 @@ Do not invent table names, column names, relationships or policies.
 All Supabase queries, repositories and services must follow this schema.
 
 Business rules:
-@docs/database/database-rules.md
+@src/doc/database/database-rules.md

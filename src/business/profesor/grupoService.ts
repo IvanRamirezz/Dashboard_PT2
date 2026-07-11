@@ -18,11 +18,13 @@ function generarCodigo(longitud = 5): string {
   return codigo;
 }
 
-function calcularCicloEscolar(): string {
-  const now     = new Date();
-  const year    = now.getFullYear();
-  // enero(0)-junio(5) = semestre 2 | julio(6)-diciembre(11) = semestre 1
-  const periodo = now.getMonth() < 6 ? "2" : "1";
+export function calcularCicloEscolar(): string {
+  const now = new Date();
+  const mes = now.getMonth();
+  // enero(0)-junio(5) = semestre 2 del ciclo en curso
+  // julio(6)-diciembre(11) = semestre 1 del ciclo que inicia y concluye el año siguiente
+  const periodo = mes < 6 ? "2" : "1";
+  const year    = mes < 6 ? now.getFullYear() : now.getFullYear() + 1;
   return `${year}-${periodo}`;
 }
 

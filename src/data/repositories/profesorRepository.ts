@@ -99,7 +99,10 @@ export async function updateTeacherUsuario(
   ]);
 
   if (userError) throw new Error(userError.message);
-  if (profError) throw new Error(profError.message);
+  if (profError) {
+    if (profError.code === "23505") throw new Error("MATRICULA_EXISTS");
+    throw new Error(profError.message);
+  }
 }
 
 export async function updateTeacherEstado(

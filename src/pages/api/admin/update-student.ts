@@ -43,7 +43,13 @@ export async function POST({ request, cookies }: APIContext) {
     });
   } catch (e) {
     console.error("[update-student]", e);
-    return apiError("Error al actualizar el alumno", 500);
+    const errorUrl = new URL(redirectPath, request.url);
+    errorUrl.searchParams.delete("updated");
+    errorUrl.searchParams.set(
+      "error",
+      e instanceof Error && e.message === "BOLETA_EXISTS" ? "boleta_duplicada" : "actualizacion"
+    );
+    return apiRedirect(errorUrl);
   }
 
   return apiRedirect(new URL(redirectPath, request.url));

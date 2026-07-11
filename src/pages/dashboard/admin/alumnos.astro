@@ -108,6 +108,7 @@ function listUrl(overrides: Record<string, string | number | undefined>) {
       {deleted && <Toast message="Alumno dado de baja correctamente." type="warning" />}
       {error === "campos_vacios" && <Toast message="Todos los campos son requeridos." type="error" />}
       {error === "actualizacion" && <Toast message="Error al actualizar. Intenta de nuevo." type="error" />}
+      {error === "boleta_duplicada" && <Toast message="Ese número de boleta ya está registrado por otro alumno." type="error" />}
     </div>
   ) : (
     <div class="module">

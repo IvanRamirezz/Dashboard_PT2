@@ -97,6 +97,7 @@ const estadoBadge: Record<string, string> = {
       {deleted && <Toast message="Profesor dado de baja correctamente." type="warning" />}
       {error === "campos_vacios" && <Toast message="Todos los campos son requeridos." type="error" />}
       {error === "actualizacion" && <Toast message="Error al actualizar. Intenta de nuevo." type="error" />}
+      {error === "matricula_duplicada" && <Toast message="Esa matrícula ya está registrada por otro profesor." type="error" />}
     </div>
   ) : (
     <div class="module">
@@ -206,6 +207,7 @@ const estadoBadge: Record<string, string> = {
       {deleted && <Toast message="Profesor dado de baja correctamente." type="warning" />}
       {error === "campos_vacios" && <Toast message="Todos los campos son requeridos." type="error" />}
       {error === "actualizacion" && <Toast message="Error al actualizar. Intenta de nuevo." type="error" />}
+      {error === "matricula_duplicada" && <Toast message="Esa matrícula ya está registrada por otro profesor." type="error" />}
     </div>
   )}
 
