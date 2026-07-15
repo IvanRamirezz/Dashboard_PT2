@@ -17,6 +17,8 @@ npx playwright test   # Run e2e tests (src/tests/e2e/)
 
 Environment: copy `.env.example` to `.env.local` and fill in Supabase credentials.
 
+Deployment: `output: 'server'` with the `@astrojs/vercel` adapter (see `astro.config.mjs`) — every route is SSR, not static.
+
 ## Architecture
 
 Three-layer architecture with strict separation:
@@ -49,9 +51,11 @@ Runs on every request. Sets `context.locals.user` (Supabase User) and `context.l
 - `/dashboard/profesor`, `/api/profesor` → requires role `profesor` with `estado: aprobado`
 - Teachers with pending/rejected status are redirected with a query param explaining why
 
+Session validation (`sessionService.getValidatedSession`) checks both the Supabase access token **and** a single-session-per-device guard: the `app-session-id` cookie must match `usuarios.active_session_uuid` in the DB. A new login overwrites that column, silently invalidating any other active session for the same user.
+
 ### API endpoints
 
-All in `src/pages/api/`. Pattern: read `formData()`, call a service, return `303` redirect or JSON `{ ok, error?, data? }`. Protected by middleware — unauthorized requests get 401/403 before reaching the handler.
+All in `src/pages/api/`. Pattern: read `formData()`, call a service, return `303` redirect or JSON `{ ok, error?, data? }`. Use the `apiOk` / `apiError` / `apiRedirect` helpers in `src/utils/apiResponse.ts` for these responses. Protected by middleware — unauthorized requests get 401/403 before reaching the handler.
 
 ### Auth & registration flow
 
