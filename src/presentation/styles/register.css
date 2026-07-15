@@ -128,6 +128,24 @@
   transform: translateY(0);
 }
 
+/* ── Link a política de privacidad ── */
+.privacy-link {
+  text-align: center;
+  margin-top: var(--sp-4);
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+}
+
+.privacy-link a {
+  color: var(--text-muted);
+  text-decoration: underline;
+  transition: color var(--transition);
+}
+
+.privacy-link a:hover {
+  color: var(--text-main);
+}
+
 /* ════════════════════════════════════
    FEEDBACK (success / error page)
    ════════════════════════════════════ */

@@ -1,0 +1,195 @@
+---
+// src/pages/legal/privacidad.astro
+import Layout from "../../presentation/layouts/Layout.astro";
+import "../../presentation/styles/legal.css";
+
+type Block =
+  | { type: "p"; text: string }
+  | { type: "ul"; items: string[] };
+
+type Section = {
+  title: string;
+  blocks: Block[];
+};
+
+const sections: Section[] = [
+  {
+    title: "1. Introducción",
+    blocks: [
+      {
+        type: "p",
+        text: 'FiberLab VR ("la Aplicación") es una plataforma educativa desarrollada para apoyar el aprendizaje de prácticas de fibra óptica mediante un entorno de realidad virtual. La presente Política de Privacidad describe cómo recopilamos, utilizamos, almacenamos y protegemos la información de los usuarios.',
+      },
+      {
+        type: "p",
+        text: "Al utilizar la aplicación, aceptas las prácticas descritas en esta política.",
+      },
+    ],
+  },
+  {
+    title: "2. Información que recopilamos",
+    blocks: [
+      { type: "p", text: "FiberLab VR puede recopilar la siguiente información:" },
+      {
+        type: "ul",
+        items: [
+          "Nombre del usuario.",
+          "Dirección de correo electrónico.",
+          "Identificador de usuario.",
+          "Resultados de las prácticas realizadas.",
+          "Calificaciones obtenidas.",
+          "Progreso del usuario dentro de la aplicación.",
+        ],
+      },
+      { type: "p", text: "No recopilamos información financiera ni datos biométricos." },
+    ],
+  },
+  {
+    title: "3. Uso de la información",
+    blocks: [
+      { type: "p", text: "La información recopilada se utiliza para:" },
+      {
+        type: "ul",
+        items: [
+          "Autenticar el acceso del usuario.",
+          "Permitir el uso de la plataforma educativa.",
+          "Registrar el progreso durante las prácticas.",
+          "Mostrar calificaciones y resultados.",
+          "Permitir a los instructores consultar el desempeño académico.",
+          "Mejorar la calidad y estabilidad de la aplicación.",
+        ],
+      },
+    ],
+  },
+  {
+    title: "4. Almacenamiento de la información",
+    blocks: [
+      {
+        type: "p",
+        text: "La información se almacena de forma segura utilizando Supabase, una plataforma de servicios en la nube que proporciona autenticación y almacenamiento de bases de datos.",
+      },
+      {
+        type: "p",
+        text: "Se implementan medidas razonables para proteger la información contra accesos no autorizados, pérdida o alteración.",
+      },
+    ],
+  },
+  {
+    title: "5. Compartición de la información",
+    blocks: [
+      { type: "p", text: "FiberLab VR no vende ni comercializa la información personal de sus usuarios." },
+      { type: "p", text: "Los datos únicamente pueden compartirse con:" },
+      {
+        type: "ul",
+        items: [
+          "Supabase, como proveedor de infraestructura tecnológica.",
+          "Los instructores autorizados para fines exclusivamente académicos.",
+          "Autoridades competentes cuando exista una obligación legal.",
+        ],
+      },
+    ],
+  },
+  {
+    title: "6. Conservación de los datos",
+    blocks: [
+      {
+        type: "p",
+        text: "Los datos personales se conservarán únicamente durante el tiempo necesario para proporcionar los servicios educativos o mientras exista una relación activa con la institución educativa correspondiente.",
+      },
+    ],
+  },
+  {
+    title: "7. Derechos del usuario",
+    blocks: [
+      { type: "p", text: "Los usuarios pueden solicitar:" },
+      {
+        type: "ul",
+        items: [
+          "Acceso a sus datos personales.",
+          "Corrección de información incorrecta.",
+          "Eliminación de sus datos personales cuando sea aplicable.",
+          "Información sobre el tratamiento de sus datos.",
+        ],
+      },
+      {
+        type: "p",
+        text: "Las solicitudes podrán realizarse mediante el correo electrónico indicado en la sección de contacto.",
+      },
+    ],
+  },
+  {
+    title: "8. Seguridad",
+    blocks: [
+      {
+        type: "p",
+        text: "Implementamos medidas técnicas y organizativas para proteger la información almacenada contra accesos no autorizados, alteraciones o pérdidas.",
+      },
+      {
+        type: "p",
+        text: "Sin embargo, ningún método de transmisión o almacenamiento electrónico puede garantizar una seguridad absoluta.",
+      },
+    ],
+  },
+  {
+    title: "9. Menores de edad",
+    blocks: [
+      {
+        type: "p",
+        text: "FiberLab VR está dirigida a estudiantes dentro de programas educativos y su uso se realiza bajo la supervisión de instituciones educativas e instructores.",
+      },
+    ],
+  },
+  {
+    title: "10. Cambios a esta Política",
+    blocks: [
+      {
+        type: "p",
+        text: "Esta Política de Privacidad podrá actualizarse periódicamente para reflejar cambios en la aplicación o en la legislación aplicable.",
+      },
+      {
+        type: "p",
+        text: "La fecha de la última actualización aparecerá al inicio de este documento.",
+      },
+    ],
+  },
+  {
+    title: "11. Contacto",
+    blocks: [
+      {
+        type: "p",
+        text: "Si tienes preguntas relacionadas con esta Política de Privacidad o deseas ejercer alguno de tus derechos, puedes comunicarte a través del siguiente correo electrónico:",
+      },
+      { type: "p", text: "Correo electrónico: rmzivan510@gmail.com" },
+    ],
+  },
+];
+---
+
+<Layout title="Política de Privacidad">
+  <div class="legal-page">
+    <div class="legal-content">
+      <header class="legal-header">
+        <img src="/images/LogoFiberLabvr.png" alt="FiberLab VR" />
+        <a class="legal-back" href="/">← Volver</a>
+      </header>
+
+      <h1 class="legal-title">Política de Privacidad de FiberLab VR</h1>
+      <p class="legal-updated">Última actualización: 15 de julio de 2026</p>
+
+      {sections.map((section) => (
+        <section class="legal-section">
+          <h2>{section.title}</h2>
+          {section.blocks.map((block) =>
+            block.type === "ul" ? (
+              <ul>
+                {block.items.map((item) => <li>{item}</li>)}
+              </ul>
+            ) : (
+              <p>{block.text}</p>
+            )
+          )}
+        </section>
+      ))}
+    </div>
+  </div>
+</Layout>
