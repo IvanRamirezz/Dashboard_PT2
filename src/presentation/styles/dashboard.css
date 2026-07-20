@@ -659,3 +659,173 @@ h3 {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(52,91,99,0.12);
 }
+
+/* ════════════════════════════════════
+   FEEDBACK (estadísticas de encuesta)
+   ════════════════════════════════════ */
+.feedback-empty {
+  color: #4e6063;
+  font-size: var(--font-sm);
+}
+
+.feedback-error {
+  background: var(--error-bg);
+  color: #b91c1c;
+  padding: var(--sp-4);
+  border-radius: var(--radius);
+  font-size: var(--font-sm);
+}
+
+.feedback-summary {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-6);
+}
+
+.feedback-summary-number {
+  font-size: var(--font-2xl);
+  font-weight: 700;
+  color: var(--dark);
+}
+
+.feedback-summary-label {
+  font-size: var(--font-sm);
+  color: #4e6063;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--sp-5);
+}
+
+.stat-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: var(--sp-5);
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+
+.stat-card-title {
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--dark);
+  line-height: 1.4;
+}
+
+.stat-card-average {
+  font-size: var(--font-md);
+  font-weight: 700;
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+.stat-card-empty {
+  color: #4e6063;
+  font-size: var(--font-sm);
+}
+
+/* ── Barra divergente (Likert) ── */
+.likert-bar {
+  display: flex;
+  height: 20px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: #eef0ef;
+}
+
+.likert-segment { height: 100%; }
+.likert-negativo { background: var(--error); }
+.likert-neutral  { background: var(--text-muted); }
+.likert-positivo { background: var(--success); }
+
+.likert-legend {
+  display: flex;
+  gap: var(--sp-4);
+  margin-top: var(--sp-2);
+  font-size: var(--font-xs);
+  color: #4e6063;
+}
+
+.likert-legend .dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
+.dot-negativo { background: var(--error); }
+.dot-neutral  { background: var(--text-muted); }
+.dot-positivo { background: var(--success); }
+
+/* ── Barras de categoría (ritmo) ── */
+.category-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.category-bar-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 40px;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.category-bar-label {
+  font-size: var(--font-xs);
+  color: #4e6063;
+}
+
+.category-bar-track {
+  height: 12px;
+  border-radius: var(--radius-sm);
+  background: #eef0ef;
+  overflow: hidden;
+}
+
+.category-bar-fill {
+  height: 100%;
+  background: var(--primary);
+}
+
+.category-bar-pct {
+  font-size: var(--font-xs);
+  color: var(--dark);
+  text-align: right;
+}
+
+/* ── Tile de recomendación ── */
+.recommend-tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.recommend-number {
+  font-size: var(--font-xl);
+  font-weight: 700;
+  color: var(--dark);
+}
+
+.recommend-bar {
+  display: flex;
+  height: 20px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: #eef0ef;
+}
+
+.recommend-segment { height: 100%; }
+.recommend-si { background: var(--success); }
+.recommend-no { background: var(--text-muted); }

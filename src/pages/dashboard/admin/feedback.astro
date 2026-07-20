@@ -1,0 +1,163 @@
+---
+// src/pages/dashboard/admin/feedback.astro
+import DashboardLayout from "../../../presentation/layouts/DashboardLayout.astro";
+import { getFeedbackStats, type FeedbackStats, type EscalaStats } from "../../../business/admin/feedbackService";
+
+const { user } = Astro.locals;
+
+const EMPTY_STATS: FeedbackStats = {
+  total: 0,
+  navegacion: { promedio: 0, distribucion: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } },
+  instrucciones: { promedio: 0, distribucion: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } },
+  claridad_tema: { promedio: 0, distribucion: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } },
+  ritmo: { muy_lento: 0, adecuado: 0, muy_rapido: 0 },
+  recomendaria: { si: 0, no: 0, porcentajeSi: 0 },
+};
+
+let stats: FeedbackStats = EMPTY_STATS;
+let loadError = false;
+
+try {
+  stats = await getFeedbackStats();
+} catch {
+  loadError = true;
+}
+
+function escalaPercentages(escala: EscalaStats) {
+  const { distribucion } = escala;
+  const count = distribucion[1] + distribucion[2] + distribucion[3] + distribucion[4] + distribucion[5];
+  if (count === 0) return null;
+
+  return {
+    negativo: Math.round(((distribucion[1] + distribucion[2]) / count) * 100),
+    neutral:  Math.round((distribucion[3] / count) * 100),
+    positivo: Math.round(((distribucion[4] + distribucion[5]) / count) * 100),
+  };
+}
+
+const escalaPreguntas = [
+  {
+    label: "¿Qué tan fácil fue navegar y moverte dentro del entorno virtual?",
+    stats: stats.navegacion,
+    pct: escalaPercentages(stats.navegacion),
+  },
+  {
+    label: "¿Las instrucciones en pantalla fueron claras y fáciles de seguir?",
+    stats: stats.instrucciones,
+    pct: escalaPercentages(stats.instrucciones),
+  },
+  {
+    label: "¿Qué tan claro te quedó el tema después de realizar la práctica?",
+    stats: stats.claridad_tema,
+    pct: escalaPercentages(stats.claridad_tema),
+  },
+];
+
+const ritmoTotal = stats.ritmo.muy_lento + stats.ritmo.adecuado + stats.ritmo.muy_rapido;
+
+function ritmoPct(count: number) {
+  return ritmoTotal === 0 ? 0 : Math.round((count / ritmoTotal) * 100);
+}
+
+const recomendariaTotal = stats.recomendaria.si + stats.recomendaria.no;
+---
+
+<DashboardLayout title="Feedback" role="admin" userEmail={user.email ?? ""}>
+  <div class="module">
+    <h2>Feedback de la aplicación VR</h2>
+    <p class="module-description">
+      Respuestas del cuestionario de satisfacción que los alumnos responden al
+      terminar su experiencia en la aplicación de realidad virtual.
+    </p>
+
+    {loadError ? (
+      <p class="feedback-error">No se pudieron cargar las respuestas. Intenta de nuevo más tarde.</p>
+    ) : stats.total === 0 ? (
+      <p class="feedback-empty">Todavía no hay respuestas registradas.</p>
+    ) : (
+      <>
+        <div class="feedback-summary">
+          <span class="feedback-summary-number">{stats.total}</span>
+          <span class="feedback-summary-label">
+            {stats.total === 1 ? "alumno ha respondido" : "alumnos han respondido"}
+          </span>
+        </div>
+
+        <div class="stat-grid">
+          {escalaPreguntas.map((p) => (
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-card-title">{p.label}</span>
+                {p.pct && <span class="stat-card-average">{p.stats.promedio.toFixed(1)} / 5</span>}
+              </div>
+              {p.pct ? (
+                <>
+                  <div class="likert-bar">
+                    <span class="likert-segment likert-negativo" style={`width: ${p.pct.negativo}%`}></span>
+                    <span class="likert-segment likert-neutral" style={`width: ${p.pct.neutral}%`}></span>
+                    <span class="likert-segment likert-positivo" style={`width: ${p.pct.positivo}%`}></span>
+                  </div>
+                  <div class="likert-legend">
+                    <span><i class="dot dot-negativo"></i>1-2</span>
+                    <span><i class="dot dot-neutral"></i>3</span>
+                    <span><i class="dot dot-positivo"></i>4-5</span>
+                  </div>
+                </>
+              ) : (
+                <p class="stat-card-empty">Sin datos aún.</p>
+              )}
+            </div>
+          ))}
+
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <span class="stat-card-title">¿El ritmo de la práctica fue adecuado?</span>
+            </div>
+            {ritmoTotal === 0 ? (
+              <p class="stat-card-empty">Sin datos aún.</p>
+            ) : (
+              <div class="category-bars">
+                <div class="category-bar-row">
+                  <span class="category-bar-label">Muy lento</span>
+                  <div class="category-bar-track">
+                    <div class="category-bar-fill" style={`width: ${ritmoPct(stats.ritmo.muy_lento)}%`}></div>
+                  </div>
+                  <span class="category-bar-pct">{ritmoPct(stats.ritmo.muy_lento)}%</span>
+                </div>
+                <div class="category-bar-row">
+                  <span class="category-bar-label">Adecuado</span>
+                  <div class="category-bar-track">
+                    <div class="category-bar-fill" style={`width: ${ritmoPct(stats.ritmo.adecuado)}%`}></div>
+                  </div>
+                  <span class="category-bar-pct">{ritmoPct(stats.ritmo.adecuado)}%</span>
+                </div>
+                <div class="category-bar-row">
+                  <span class="category-bar-label">Muy rápido</span>
+                  <div class="category-bar-track">
+                    <div class="category-bar-fill" style={`width: ${ritmoPct(stats.ritmo.muy_rapido)}%`}></div>
+                  </div>
+                  <span class="category-bar-pct">{ritmoPct(stats.ritmo.muy_rapido)}%</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div class="stat-card recommend-tile">
+            <span class="stat-card-title">¿Recomendarías esta forma de aprender?</span>
+            {recomendariaTotal === 0 ? (
+              <p class="stat-card-empty">Sin datos aún.</p>
+            ) : (
+              <>
+                <span class="recommend-number">{stats.recomendaria.porcentajeSi}% recomendaría la app</span>
+                <div class="recommend-bar">
+                  <span class="recommend-segment recommend-si" style={`width: ${stats.recomendaria.porcentajeSi}%`}></span>
+                  <span class="recommend-segment recommend-no" style={`width: ${100 - stats.recomendaria.porcentajeSi}%`}></span>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </>
+    )}
+  </div>
+</DashboardLayout>
