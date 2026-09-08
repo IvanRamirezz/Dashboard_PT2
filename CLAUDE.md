@@ -75,6 +75,10 @@ Computed from current date, format `YYYY-P`:
 - Months 1–6 (Jan–Jun) → period `2`, year = current year (e.g., `2027-2`).
 - Months 7–12 (Jul–Dec) → period `1`, year = **next** year, since this half starts a school year that concludes the following calendar year (e.g., July 2026 → `2027-1`).
 
+### Feedback aggregation (encuestas_satisfaccion)
+
+`feedbackService.ts` computes stats (averages, distributions) over `encuestas_satisfaccion` rows fetched by `feedbackRepository.ts`. That repository reads via `supabaseAdmin` (service role) since the table has no admin-facing SELECT policy — same pattern as other admin-only reads. The `respuestas_json` contract (fields, scales) is documented at the bottom of `schema.sql`.
+
 ## Environment variables
 
 | Variable | Scope | Purpose |
