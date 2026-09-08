@@ -5,6 +5,7 @@ import { findGroupByIdAndTeacher } from "../../data/repositories/grupoRepository
 import {
   findAsignacionesByGrupo,
   insertAsignacion,
+  updateAsignacionFecha,
 } from "../../data/repositories/asignacionRepository";
 
 export async function getAssignmentFormData(usuarioId: number) {
@@ -24,14 +25,36 @@ export async function getAssignedPracticesByGroup(
 
   const asignaciones = await findAsignacionesByGrupo(grupoId);
   const practicas = asignaciones
-    .map((row: any) => row.practicas)
-    .filter(Boolean);
+    .filter((row: any) => row.practicas)
+    .map((row: any) => ({
+      practica_id: row.practicas.practica_id,
+      titulo:      row.practicas.titulo,
+      fecha_fin:   row.fecha_fin,
+    }));
 
   return [
     ...new Map(
-      practicas.map((p: any) => [p.practica_id, { practica_id: p.practica_id, titulo: p.titulo }])
+      practicas.map((p: any) => [p.practica_id, p])
     ).values(),
   ];
+}
+
+export async function updateAssignmentDeadline(
+  usuarioId:   number,
+  grupoId:     number,
+  practicaId:  number,
+  fechaFinStr: string,
+) {
+  const grupo = await findGroupByIdAndTeacher(grupoId, usuarioId);
+  if (!grupo) throw new Error("Grupo no autorizado");
+
+  const hoyStr = new Date().toISOString().split("T")[0];
+  if (!fechaFinStr || fechaFinStr < hoyStr) {
+    throw new Error("Fecha inválida");
+  }
+
+  const fechaFin = new Date(fechaFinStr + "T23:59:59");
+  await updateAsignacionFecha(grupoId, practicaId, fechaFin.toISOString());
 }
 
 export async function assignPracticeToGroup(

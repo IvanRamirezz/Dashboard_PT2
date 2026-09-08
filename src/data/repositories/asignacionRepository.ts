@@ -32,3 +32,16 @@ export async function insertAsignacion(datos: {
     .insert(datos);
   if (error) throw error;
 }
+
+export async function updateAsignacionFecha(
+  grupoId:    number,
+  practicaId: number,
+  fechaFin:   string,
+) {
+  const { error } = await supabaseAdmin
+    .from("practicas_grupo")
+    .update({ fecha_fin: fechaFin })
+    .eq("grupo_id", grupoId)
+    .eq("practica_id", practicaId);
+  if (error) throw error;
+}

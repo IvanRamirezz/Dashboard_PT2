@@ -2,6 +2,7 @@
 import DashboardLayout from "../../../presentation/layouts/DashboardLayout.astro";
 import GrupoSelector from "../../../presentation/components/profesor/GrupoSelector.astro";
 import TeacherSection from "../../../presentation/components/profesor/TeacherSection.astro";
+import Toast from "../../../presentation/components/ui/Toast.astro";
 
 import { getGroupsByTeacher } from "../../../business/profesor/grupoService";
 import { getStudentsByTeacher } from "../../../business/profesor/alumnoService";
@@ -25,6 +26,20 @@ const practicas = await getAssignedPracticesByGroup(roleData.usuarioId, grupoId)
 if (practicaId) {
   alumnos = alumnos.filter(a => String(a.practica_id) === practicaId);
 }
+
+const practicaSeleccionada = practicaId
+  ? practicas.find(p => String(p.practica_id) === practicaId)
+  : null;
+
+const hoy = new Date().toISOString().split("T")[0];
+
+const successParam = Astro.url.searchParams.get("success");
+const errorParam   = Astro.url.searchParams.get("error");
+
+const toast =
+  successParam === "fecha" ? { message: "Fecha límite actualizada correctamente", type: "success" as const } :
+  errorParam   === "fecha" ? { message: "No se pudo actualizar la fecha límite. Verifica que no sea una fecha pasada.", type: "error" as const } :
+  undefined;
 ---
 
 <DashboardLayout
@@ -60,6 +75,24 @@ if (practicaId) {
       </option>
     ))}
   </select>
+
+  {practicaSeleccionada && (
+    <div class="fecha-limite-box">
+      <label class="teacher-label">Fecha límite de esta práctica</label>
+      <form method="POST" action="/api/profesor/actualizar-fecha-practica" class="fecha-limite-form">
+        <input type="hidden" name="grupo_id" value={grupoId} />
+        <input type="hidden" name="practica_id" value={practicaSeleccionada.practica_id} />
+        <input
+          type="date"
+          name="fecha_fin"
+          value={new Date(practicaSeleccionada.fecha_fin).toISOString().split("T")[0]}
+          min={hoy}
+          required
+        />
+        <button class="teacher-btn-sm" type="submit">Guardar fecha</button>
+      </form>
+    </div>
+  )}
 
   <table class="teacher-table">
     <thead>
@@ -114,6 +147,8 @@ if (practicaId) {
   </table>
 
 </TeacherSection>
+
+{toast && <Toast message={toast.message} type={toast.type} />}
 
 </DashboardLayout>
 
